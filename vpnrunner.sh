@@ -7,13 +7,13 @@
 #Скрипт автоматично завантажить найновішу версію db1000n та запустить її лише коли VPN є активним
 
 #parameters:
-# $1 - VPN plugin
-# $2 - executable plugin. Default: default (db1000n)
-# $3 - network manager plugin. Default: default (nm)
+# --vpn - VPN plugin
+# --exe - executable plugin. Default: default (db1000n)
+# --network-manager - network manager plugin. Default: default (nm)
 #параметри
-# $1 - VPN
-# $2 - виконавча програма. Замовчування: default (db1000n)
-# $3 - менеджер мережі. Замовчування: default (nm)
+# --vpn - VPN
+# --exe - виконавча програма. Замовчування: default (db1000n)
+# --network-manager - менеджер мережі. Замовчування: default (nm)
 
 #the duration of the script until the VPN server is reconnected
 #тривалість роботи до перепідключення із VPN-сервером
@@ -23,8 +23,8 @@ runtime="15 minute"
 #як часто перевіряти з'єднання з VPN сервером. час у секундах
 heartbeatinterval=5
 
-#if you want to use proxy leave the line on true, for using VPN change value to false
-#якщо хочете використовувати проксі, залиште значення true. для використання VPN змініть на false
+#if you want to use proxy leave the line on true, for using VPN change value to false (note, --use-proxy)
+#якщо хочете використовувати проксі, залиште значення true. для використання VPN змініть на false (--use-proxy)
 use_proxy=false
 
 
