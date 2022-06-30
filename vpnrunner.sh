@@ -32,19 +32,57 @@ use_proxy=false
 
 #plugin directory
 pluginDir="plugins"
+exePluginFileName="${pluginDir}/plugin_exe_default.sh"
+networkingPluginFileName="${pluginDir}/plugin_networking_default.sh"
 
 #ensure the right starting directory
 echo "The script you are running has basename $( basename -- "$0"; ), dirname $( dirname -- "$0"; )";
 cd $( dirname -- "$0"; )
 
-#check whether the VPN parameter is passed
-if [[ -z "$1" ]]; 
-then
+#help
+function printHelp {
+
+    echo ""
+    echo "Usage: $0 [arguments ...]"
+    echo "Example: $0 --vpn expressvpn --exe db1000n --network-manager nm"
+    echo ""
+
+}
+
+#parsing arguments
+argidx=1;
+for arg in $@
+do
+    #echo "arg: $arg"
+    args[$argidx]=$arg
+    argidx=$(( $argidx+1 ));
+done
+
+args=$@
+
+#check for mandatory arguments
+vpnArgSpefied=false;
+for (( i=1 ; i <= $# ; ++i ))
+do
+
+    if [[ "${args[$i]}" == "--vpn" ]]; then
+
+        echo "VPN argument provided"
+
+        vpnArgSpefied=true;
+
+        echo "$vpnArgSpefied"
+
+    fi
+
+done
+#echo "$vpnArgSpefied"
+if ! $vpnArgSpefied ; then
 
     vpnPluginNames=( $(find -type f -wholename "./${pluginDir}/plugin_vpn_*.sh") );
 
     tput setaf 2;
-    echo "Which of the following VPN plugins should be used?"
+    echo "Please specify the --vpn argument for one of the following available VPN plugins:";
     echo ""
     tput setaf 4;
     for curVPNPluginName in "${vpnPluginNames[@]}"
@@ -54,97 +92,117 @@ then
 
     echo ""
     tput setaf 2;
-    echo "Please type in the VPN plugin name:"
-    read vpnPluginName;
 
-else
+    exit 1;
 
-    if [[ "$1" == "--help" ]]
+    #echo ""
+    #tput setaf 2;
+    #echo "Please type in the VPN plugin name:"
+    #read vpnPluginName;
+
+fi
+
+for (( i=1 ; i <= $# ; ++i ))
+do
+
+    if [[ "${args[$i]}" == "--help" ]]
     then
 
-        echo "Usage: $0 [<VPN>] [<EXE>, default available] [<network manages> default available]";
-        exit 0;
+        printHelp;
 
     else
 
-        vpnPluginName="$1"
+        if [[ $i == $# && "${args[$i]:0:1}" == "-" || "${args[$i]:0:1}" == "-" && "${args[$(( $i+1 ))]:0:1}" == "-" ]]
+        then
 
-    fi
+            echo "No proper argument value for argument ${args[$i]} -> skipping";
+            continue;
 
-fi
+        fi
 
-#check whether the VPN plugin exists
-vpnPluginFileName="${pluginDir}/plugin_vpn_$vpnPluginName.sh";
-if [ -e $vpnPluginFileName ] 
-then
+        if [[ "${args[$i]:0:1}" != "-" ]]
+        then
 
-    echo "VPN plugin for $vpnPluginName found.";
+            echo "Not a proper argument name ${args[$i]} -> skipping";
+            continue;
 
-else
-    
-    tput setaf 1;
-    echo "VPN plugin for $vpnPluginName NOT found (file $vpnPluginFileName does not exist) -> will exit.";
-    exit 1;
+        fi
 
-fi
+        argName=${args[$i]};
+        i=$(( $i+1 ));
+        argValue=${args[$i]}
+
+        #process the arguments
+
+        if [[ "$argName" == "--vpn" ]]; then
+
+            echo "parsed argument $argName: ${argValue}"
+
+            vpnPluginName=$argValue;
+
+            #check whether the VPN plugin exists
+            vpnPluginFileName="${pluginDir}/plugin_vpn_$vpnPluginName.sh";
+            if [ -e $vpnPluginFileName ]
+            then
+
+                echo "VPN plugin for $vpnPluginName found.";
+
+            else
+
+                tput setaf 1;
+                echo "VPN plugin for $vpnPluginName NOT found (file $vpnPluginFileName does not exist) -> will exit.";
+                exit 1;
+
+            fi
+
+        elif [[ "$argName" == "--exe" ]]; then
+
+            echo "parsed argument $argName: ${argValue}"
+
+            #check whether the exe plugin exists
+            exePluginFileName="${pluginDir}/plugin_exe_$argValue.sh";
+            if [ -e $exePluginFileName ]
+            then
+
+                echo "Exe plugin for $argValue found.";
+
+            else
+
+                tput setaf 1;
+                echo "Exe plugin for $argValue NOT found (file $exePluginFileName does not exist) -> will exit.";
+                exit 1;
+
+            fi #exe plugin check
+
+
+        elif [[ "$argName" == "--network-manager" ]]; then
+
+            echo "parsed argument $argName: ${argValue}"
+
+            #check whether the networking plugin exists
+            networkingPluginFileName="${pluginDir}/plugin_networking_$argValue.sh";
+            if [ -e $networkingPluginFileName ]
+            then
+
+                echo "Networking plugin for $argValue found.";
+
+            else
+
+                tput setaf 1;
+                echo "Networking plugin for $argValue NOT found (file $networkingPluginFileName does not exist) -> will exit.";
+                exit 1;
+
+            fi #networking plugin check
+
+        fi #parameters
+
+    fi #unary vs binary arguments
+
+done
 
 source $vpnPluginFileName
 
-#executable
-exePluginFileName="";
-if [[ -z "$2" ]];
-then
-
-    echo "No exe parameter specified -> assuming default";
-    exePluginFileName="${pluginDir}/plugin_exe_default.sh";
-
-else
-
-    #check whether the exe plugin exists
-    exePluginFileName="${pluginDir}/plugin_exe_$2.sh";
-    if [ -e $exePluginFileName ]
-    then
-
-        echo "Exe plugin for $2 found.";
-
-    else
-
-        tput setaf 1;
-        echo "Exe plugin for $2 NOT found (file $exePluginFileName does not exist) -> will exit.";
-        exit 1;
-
-    fi #exe plugin check
-
-fi # exe parameter
-
 source $exePluginFileName
-
-#check whether the networking parameter is passed
-networkingPluginFileName="";
-if [[ -z "$3" ]];
-then
-
-    echo "No networking parameter specified -> assuming default";
-    networkingPluginFileName="${pluginDir}/plugin_networking_default.sh";
-    
-else
-
-    #check whether the networking plugin exists
-    networkingPluginFileName="${pluginDir}/plugin_networking_$3.sh";
-    if [ -e $networkingPluginFileName ] 
-    then
-
-        echo "Networking plugin for $3 found.";
-
-    else
-
-        tput setaf 1;
-        echo "Networking plugin for $3 NOT found (file $networkingPluginFileName does not exist) -> will exit.";
-        exit 1;
-
-    fi #networking plugin check
-
-fi # networking parameter
 
 source $networkingPluginFileName
 
