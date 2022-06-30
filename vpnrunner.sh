@@ -61,7 +61,7 @@ done
 args=$@
 
 #check for mandatory arguments
-vpnArgSpefied=false;
+vpnArgSpecified=false;
 for (( i=1 ; i <= $# ; ++i ))
 do
 
@@ -69,15 +69,15 @@ do
 
         echo "VPN argument provided"
 
-        vpnArgSpefied=true;
+        vpnArgSpecified=true;
 
-        echo "$vpnArgSpefied"
+        echo "$vpnArgSpecified"
 
     fi
 
 done
-#echo "$vpnArgSpefied"
-if ! $vpnArgSpefied ; then
+#echo "$vpnArgSpecified"
+if ! $vpnArgSpecified ; then
 
     vpnPluginNames=( $(find -type f -wholename "./${pluginDir}/plugin_vpn_*.sh") );
 
@@ -193,6 +193,13 @@ do
                 exit 1;
 
             fi #networking plugin check
+
+        elif [[ "$argName" == "--heartbeat-interval" ]]; then
+
+            echo "parsed argument $argName: ${argValue}"
+
+            #check whether the networking plugin exists
+            heartbeatinterval=${argValue}
 
         fi #parameters
 
