@@ -36,16 +36,29 @@ exePluginFileName="${pluginDir}/plugin_exe_default.sh"
 networkingPluginFileName="${pluginDir}/plugin_networking_default.sh"
 
 #ensure the right starting directory
-echo "The script you are running has basename $( basename -- "$0"; ), dirname $( dirname -- "$0"; )";
+#echo "The script you are running has basename $( basename -- "$0"; ), dirname $( dirname -- "$0"; )";
 cd $( dirname -- "$0"; )
 
 #help
 function printHelp {
 
+    tput setaf 2;
     echo ""
     echo "Usage: $0 [arguments ...]"
-    echo "Example: $0 --vpn expressvpn --exe db1000n --network-manager nm"
     echo ""
+    echo "Example1: $0 --vpn expressvpn --exe db1000n --network-manager nm"
+    echo "Example2: $0 --vpn hotspotshield --exe distress"
+    echo ""
+    echo "  --help                - show this help info"
+    echo "  --vpn                 - VPN plugin to use (some are available, one must be selected)"
+    echo "  --exe                 - executable plugin to use (default available)"
+    echo "  --network-manager     - network manager plugin to use (default available)"
+    echo "  --heartbeat-interval  - interval to check the VPN status, in seconds (default is $heartbeatinterval)"
+    echo "  --restart-interval    - interval to restart the run, in minutes (default is $runtime)"
+    echo ""
+    echo "Note, executables will be downloaded automatically if not available."
+    echo ""
+    tput setaf 4;
 
 }
 
@@ -62,69 +75,51 @@ args=$@
 
 #check for mandatory arguments
 vpnArgSpecified=false;
+proxyArgSpecified=false;
 for (( i=1 ; i <= $# ; ++i ))
 do
 
     if [[ "${args[$i]}" == "--vpn" ]]; then
 
-        echo "VPN argument provided"
+         vpnArgSpecified=true;
 
-        vpnArgSpecified=true;
+    elif [[ "${args[$i]}" == "--use-proxy" ]]; then
 
-        echo "$vpnArgSpecified"
+        proxyArgSpecified=true;
 
     fi
 
 done
-#echo "$vpnArgSpecified"
-if ! $vpnArgSpecified ; then
-
-    vpnPluginNames=( $(find -type f -wholename "./${pluginDir}/plugin_vpn_*.sh") );
-
-    tput setaf 2;
-    echo "Please specify the --vpn argument for one of the following available VPN plugins:";
-    echo ""
-    tput setaf 4;
-    for curVPNPluginName in "${vpnPluginNames[@]}"
-    do
-        expr "$curVPNPluginName" : "./${pluginDir}/plugin_vpn_\(.*\).sh"
-    done
-
-    echo ""
-    tput setaf 2;
-
-    exit 1;
-
-    #echo ""
-    #tput setaf 2;
-    #echo "Please type in the VPN plugin name:"
-    #read vpnPluginName;
-
-fi
 
 for (( i=1 ; i <= $# ; ++i ))
 do
 
-    if [[ "${args[$i]}" == "--help" ]]
-    then
+    if [[ "${args[$i]}" == "--help" ]] ; then
 
         printHelp;
+        exit
+
+    elif [[ "${args[$i]}" == "--use-proxy" ]] ; then
+
+        use_proxy=true;
 
     else
 
         if [[ $i == $# && "${args[$i]:0:1}" == "-" || "${args[$i]:0:1}" == "-" && "${args[$(( $i+1 ))]:0:1}" == "-" ]]
         then
 
-            echo "No proper argument value for argument ${args[$i]} -> skipping";
-            continue;
+            echo "No proper argument value for argument ${args[$i]} -> exit";
+            exit 1
+            #continue;
 
         fi
 
         if [[ "${args[$i]:0:1}" != "-" ]]
         then
 
-            echo "Not a proper argument name ${args[$i]} -> skipping";
-            continue;
+            echo "Not a proper argument name ${args[$i]} -> exit";
+            exit 1
+            #continue;
 
         fi
 
@@ -198,8 +193,14 @@ do
 
             echo "parsed argument $argName: ${argValue}"
 
-            #check whether the networking plugin exists
             heartbeatinterval=${argValue}
+
+        elif [[ "$argName" == "--restart-interval" ]]; then
+
+            echo "parsed argument $argName: ${argValue}"
+
+            #check whether the networking plugin exists
+            runtime="${argValue} minute"
 
         fi #parameters
 
@@ -207,7 +208,31 @@ do
 
 done
 
-source $vpnPluginFileName
+if (! $vpnArgSpecified) && (! $proxyArgSpecified) ; then
+
+    vpnPluginNames=( $(find -type f -wholename "./${pluginDir}/plugin_vpn_*.sh") );
+
+    tput setaf 2;
+    echo "Please specify --use-proxy or the --vpn argument for one of the following available VPN plugins:";
+    echo ""
+    tput setaf 4;
+    for curVPNPluginName in "${vpnPluginNames[@]}"
+    do
+        expr "$curVPNPluginName" : "./${pluginDir}/plugin_vpn_\(.*\).sh"
+    done
+
+    echo ""
+    tput setaf 2;
+
+    exit 1;
+
+fi
+
+if $vpnArgSpecified ; then
+
+    source $vpnPluginFileName
+
+fi
 
 source $exePluginFileName
 
@@ -234,18 +259,41 @@ function startAttack {
 
     tput setaf 6;
 
-    if $use_proxy
-    then
-        startAttackProxyCommand
-    else
-        if [[ "$(statusVPN)" == "connected" ]]
-        then
-            startAttackCommand
+    if $vpnArgSpecified ; then
+
+        if [[ "$(statusVPN)" == "connected" ]] ; then
+
+            if $use_proxy ; then
+
+                startAttackProxyCommand
+
+            else
+
+                startAttackCommand
+
+            fi
+
         else
+
             tput setaf 1;
             echo "Will not start attacking because no VPN connection is setup!"
+
         fi
-    fi
+
+    else #use at least proxy
+
+        if $use_proxy ; then
+
+            startAttackProxyCommand
+
+        else
+
+            tput setaf 1;
+            echo "Will not start attacking because no VPN connection is setup and no proxy is used!"
+
+        fi #use proxy
+
+    fi #vpn connected
 
 }
 
@@ -351,7 +399,15 @@ function printStatus {
     tput setaf 2;
     for (( j=1 ; j<=${nCols} ; ++j )); do echo -n "-"; done
     echo -e " Run status:\t\t${wipIndicator}\t\t"
-    echo -e " VPN:\t\t\t${vpnPluginName} ($connectionVPNInfoString)"
+    if $vpnArgSpecified ; then
+        if ! $use_proxy ; then
+            echo -e " VPN:\t\t\t${vpnPluginName} ($connectionVPNInfoString)"
+        else
+            echo -e " VPN+proxy:\t\t\t${vpnPluginName} ($connectionVPNInfoString)"
+        fi
+    else
+        echo -e " proxy:\t\t\tusing proxy"
+    fi
     echo -e " Exe:\t\t\t${EXE}\t\t\t"
     echo -e " Time:\t\t\t$(date +%T)\t\t"
     echo -e " Next restart:\t\t$(date -d @${endtime} +"%T")\t\t"
@@ -618,7 +674,12 @@ initEXECommand
 
 # at startup 
 stopAttack
-disconnectVPN
+
+if $vpnArgSpecified; then
+
+    disconnectVPN
+
+fi
 
 # stats
 globalStartDate=$(date +%s);
@@ -631,8 +692,7 @@ globalStartDate=$(date +%s);
 while true
 do
 
-	if ! $use_proxy 
-	then
+	if (! $use_proxy) || ($proxyArgSpecified && $vpnArgSpecified) ; then
 	
       	endtime=$(date -ud "$runtime" +%s)
 		
@@ -687,18 +747,28 @@ do
         stopAttack;
         disconnectVPN;
     
-    else # use_proxy
+    else # use_proxy only
     
-		for (( i=1; i<=$heartbeatinterval; i++ ))
-        do
+        endtime=$(date -ud "$runtime" +%s)
 
-            checkAttackHeartBeat;
+        while [[ $(date -u +%s) -le $endtime ]] ; do
 
-            sleep 1s;
+            for (( i=1; i<=$heartbeatinterval; i++ )) ; do
 
-        done
+                checkAttackHeartBeat;
 
-		#sleep $heartbeatinterval
+                sleep 1s;
+
+            done
+
+        done #running
+
+        tput setaf 7; tput setab 4;
+        echo "$(date +%T) restarting the loop";
+        tput setaf 6; tput setab 0;
+        echo "----------------------------------------------";
+
+        stopAttack
 
     fi # use_proxy
 
