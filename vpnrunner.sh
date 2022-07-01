@@ -27,6 +27,8 @@ heartbeatinterval=5
 #якщо хочете використовувати проксі, залиште значення true. для використання VPN змініть на false (--use-proxy)
 use_proxy=false
 
+#force binaries reinstall
+forceExeReinstall=false
 
 ################ arguments and plugins  ####################
 
@@ -55,6 +57,7 @@ function printHelp {
     echo "  --network-manager     - network manager plugin to use (default available)"
     echo "  --heartbeat-interval  - interval to check the VPN status, in seconds (default is $heartbeatinterval)"
     echo "  --restart-interval    - interval to restart the run, in minutes (default is $runtime)"
+    echo "  --force-exe-reinstall - executable will be removed and reinstalled (default is $forceExeReinstall)"
     echo ""
     echo "Note, executables will be downloaded automatically if not available."
     echo ""
@@ -102,6 +105,10 @@ do
     elif [[ "${args[$i]}" == "--use-proxy" ]] ; then
 
         use_proxy=true;
+
+    elif [[ "${args[$i]}" == "--force-exe-reinstall" ]]; then
+
+        forceExeReinstall=true;
 
     else
 
@@ -238,6 +245,7 @@ source $exePluginFileName
 
 source $networkingPluginFileName
 
+source ${pluginDir}/plugin_utilities.sh
 
 ############################################################
 
@@ -315,6 +323,8 @@ function stopAttack {
         tput setaf 6;
 
     fi
+
+    echo -ne "\033[20B"
 
 }
 trap stopAttack EXIT
@@ -724,12 +734,12 @@ do
               	
             else # VPN connected
                     
-                for (( i=1; i<=$heartbeatinterval; i++ ))
+                for (( i=1; i<=$(( $heartbeatinterval * 2 )); i++ ))
                 do
 
                     checkAttackHeartBeat;
 
-                    sleep 1s;
+                    sleep 0.5s;
 
                 done
 

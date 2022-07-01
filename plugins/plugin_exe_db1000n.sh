@@ -42,6 +42,13 @@ function stopAttackCommand {
 
 function initEXECommand {
 
+    if $forceExeReinstall ; then
+
+        echo "Forcing exe reinstall -> will delete the folder $EXEDir"
+        rm -r "$EXEDir"
+
+    fi
+
     if [ -d "$EXEDir" ]
     then
         echo ""
