@@ -397,7 +397,7 @@ function updateWIPIndicator {
 
 function printStatus {
 
-    statOffset=7;
+    statOffset=10;
     statHeight=8; # must equal the number of output rows
 
     #clean
