@@ -54,19 +54,20 @@ function initEXECommand {
     if $forceExeReinstall ; then
 
         echo "Forcing exe reinstall -> will delete the folder $EXEDir"
-        rm -r "$EXEDir"
+        rm -f -r "$EXEDir"
 
     fi
 
     #download and install the EXE if not available
-    if [ -d "$EXEDir" ]
-    then
+    if [ -d "$EXEDir" ] ; then
 
         echo "$EXEDir already exists -> nothing to do."
+        echo ""
 
     else
 
         echo "Exe dir does not exist -> will create one by checking out from GIT..."
+        echo ""
 
         git clone https://github.com/porthole-ascend-cinnamon/$EXEDir
 
