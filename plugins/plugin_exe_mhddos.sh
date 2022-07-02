@@ -29,7 +29,7 @@ function startAttackCommand {
 
     cd $EXEDir
 
-    python3 runner.py --itarmy --vpn "vpnrunner_process_${EXE}"&
+    python3 runner.py --itarmy --vpn 0 "vpnrunner_process_${EXE}"&
 
     cd ..
 
