@@ -15,7 +15,7 @@
 
 <Ваш VPN> вказує на розширення для VPN під назвою plugin_vpn_<Ваш VPN>.sh, яке знаходиться у папці plugins. Наприклад, plugin_vpn_pia.sh - тут знаходяться команди для запуску, зупинки, перевірки VPN з'єднання для PrivateInternetAccess VPN. Той же принцип стосується <Ваш EXE> у розширеннях plugin_exe_<Ваш EXE>.sh.
 
-Наразі, наступні розширення для VPN є доступними (перевірено):
+Зауважте, Вам необхідно встановити відповідний клієнт від Вашого VPN-оператора, аби vpnrunner міг правильно працювати. Наразі, наступні розширення для VPN є доступними (перевірено):
 
  - nordvpn
  - hotspotshield
@@ -46,9 +46,9 @@ or
 
 ./vpnrunner.sh --vpn <your VPN> --exe <your EXE>
 
-<your VPN> points at the VPN-lugin plugin_vpn_<your VPN>.sh in the folder plugins. E.g., plugin_vpn_pia.sh contains commands to start, stop, check VPN connection for PrivateInternetAccess VPN. Same principle applies to <your EXE> in  plugins/plugin_exe_<your EXE>.sh.
+<your VPN> points at the VPN-plugin plugin_vpn_<your VPN>.sh in the folder plugins. E.g., plugin_vpn_pia.sh contains commands to start, stop, check VPN connection for PrivateInternetAccess VPN. Same principles apply to <your EXE> in  plugins/plugin_exe_<your EXE>.sh.
 
-So far, the following VPN plugins are available (tested):
+Note, you must install and activate the corresponding VPN client from your VPN provider for vpnrunner to operate properly. So far, the following VPN plugins are available (tested):
 
  - nordvpn
  - hotspotshield
