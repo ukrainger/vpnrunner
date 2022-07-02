@@ -19,7 +19,7 @@ function startAttackProxyCommand {
 
     cd $EXEDir
 
-    python3 runner.py --itarmy "${EXE}"&
+    python3 runner.py --itarmy "${EXE}"
 
     cd ..
 
@@ -29,7 +29,7 @@ function startAttackCommand {
 
     cd $EXEDir
 
-    python3 runner.py --itarmy --vpn "${EXE}"&
+    python3 runner.py --itarmy --vpn "${EXE}"
 
     cd ..
 
