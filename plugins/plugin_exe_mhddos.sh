@@ -11,17 +11,17 @@ EXE=mhddos
 
 function statusAttackCommand {
 
-    pgrep -f "$EXE" > /dev/null; echo $(($?==0));
+    pgrep -f "vpnrunner_process_${EXE}" > /dev/null; echo $(($?==0));
 
 }
 
 function startAttackProxyCommand {
 
-    cd $EXEDir
+    cd $EXEDir;
 
-    python3 runner.py --itarmy "${EXE}"
+    python3 runner.py --itarmy "vpnrunner_process_${EXE}";
 
-    cd ..
+    cd ..;
 
 }
  
@@ -29,7 +29,7 @@ function startAttackCommand {
 
     cd $EXEDir
 
-    python3 runner.py --itarmy --vpn "${EXE}"
+    python3 runner.py --itarmy --vpn "vpnrunner_process_${EXE}"
 
     cd ..
 
@@ -37,7 +37,9 @@ function startAttackCommand {
 
 function stopAttackCommand {
 
-    pgrep -f "$EXE" | xargs pkill -TERM -P; sleep 2s; \
+    pgrep -f "$EXE";
+
+    pgrep -f "$EXE" | xargs pkill -TERM -P; sleep 2s;  \
 
 }
 
