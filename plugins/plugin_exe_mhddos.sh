@@ -40,7 +40,7 @@ function stopAttackCommand {
     echo "Stopping the processes:"
     pgrep -f "vpnrunner_process_${EXE}";
 
-    #pgrep -f "vpnrunner_process_${EXE}" | xargs pkill -TERM -P
+    pgrep -f "vpnrunner_process_${EXE}" | xargs pkill -TERM -P
     pgrep -f "vpnrunner_process_${EXE}" | xargs kill -9; sleep 2s;  \
 
 }
