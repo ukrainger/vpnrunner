@@ -27,6 +27,7 @@
 
  - db1000n - замовчування
  - distress
+ - mhddos - необхідні застосунки для Python повинні бути встановленими наперед, інакше програма не запуститься
 
 Програма завантажиться та встановиться автоматично, якщо не існує. Програма не запуститься (або ж зупиниться), якщо немає VPN з'єднання. VPN з'єднання перебуває під постійним наглядом.
 
@@ -59,6 +60,7 @@ Tested executables:
 
  - db1000n - default
  - distress
+ - mhddos - Python prerequisites must be installed, otherwise it will not run
 
 The executable will be downloaded/installed automatically if not existing. The executable does not start (or terminates) if no VPN connection is established. VPN connection is permanently monitored.
 
