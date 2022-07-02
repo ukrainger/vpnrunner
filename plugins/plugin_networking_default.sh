@@ -2,10 +2,10 @@
 
 #source "${pluginDir}/plugin_networking_nm.sh"
 
-echo "#################################################################################################"
-echo "Note, there is no active network management plugin selected -> network state will not be impacted";
-echo "#################################################################################################"
-sleep 5s
+echo "###################################################################################################################"
+echo "Note, there is no active network management plugin selected -> no need to worry, network state will not be impacted";
+echo "###################################################################################################################"
+#sleep 5s
 
 ############### networking commands ########################
 
