@@ -37,9 +37,7 @@ function startAttackCommand {
 
 function stopAttackCommand {
 
-    pgrep -f "$EXE" | xargs pkill -TERM -P
-
-    sleep 2s;
+    pgrep -f "$EXE" | xargs pkill -TERM -P; sleep 2s; \
 
 }
 
