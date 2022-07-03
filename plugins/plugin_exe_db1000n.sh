@@ -36,7 +36,7 @@ function stopAttackCommand {
 
 
 #some statistics
-function exeInfoCommand { echo "version: $(expr "$(./$EXEDir/${EXE} --version 2>&1)" : '.*{.*"version": "\(.*\)", "pid".*}.*') | pid: $(expr "$(./$EXEDir/${EXE} --version 2>&1)" : '.*{.*"pid": \(.*\).*}.*')"; }
+function exeInfoCommand { echo "version: $(expr "$(./$EXEDir/${EXE} --version 2>&1)" : '.*{.*"version": "\(.*\)", "pid".*}.*')"; }
 
 
 ############################################################
