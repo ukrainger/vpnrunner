@@ -427,7 +427,7 @@ function printStatus {
         if ! $use_proxy ; then
             echo -e " VPN:\t\t\t${vpnPluginName} ($connectionVPNInfoString)"
         else
-            echo -e " VPN+proxy:\t\t\t${vpnPluginName} ($connectionVPNInfoString)"
+            echo -e " VPN+proxy:\t\t${vpnPluginName} ($connectionVPNInfoString)"
         fi
     else
         echo -e " proxy:\t\t\tusing proxy"
