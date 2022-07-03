@@ -33,6 +33,8 @@ function stopAttackCommand {
 
 }
 
+#some statistics
+function exeInfoCommand { echo "version: $(expr "$(./$EXEDir/${EXE} --version 2>&1)" : '.*distress \(.*\)')"; }
 
 ############################################################
 

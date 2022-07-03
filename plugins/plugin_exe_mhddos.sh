@@ -45,6 +45,8 @@ function stopAttackCommand {
 
 }
 
+#some statistics
+function exeInfoCommand { echo ""; }
 
 ############################################################
 

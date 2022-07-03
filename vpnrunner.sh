@@ -267,9 +267,17 @@ function statusAttack {
 
 }
 
+exeInfoString="";
 function startAttack {
 
     tput setaf 6;
+
+    #get connection stats if available
+    if [[ $(type -t exeInfoCommand) == function ]] ; then
+        exeInfoString="$(exeInfoCommand)"
+    else
+        exeInfoString="";
+    fi
 
     if $vpnArgSpecified ; then
 
@@ -327,6 +335,8 @@ function stopAttack {
         tput setaf 6;
 
     fi
+
+    exeInfoString="";
 
     echo -ne "\033[20B"
 
@@ -422,7 +432,7 @@ function printStatus {
     else
         echo -e " proxy:\t\t\tusing proxy"
     fi
-    echo -e " Exe:\t\t\t${EXE}\t\t\t"
+    echo -e " Exe:\t\t\t${EXE} ( $exeInfoString )\t\t"
     echo -e " Time:\t\t\t$(date +%T)\t\t"
     echo -e " Next restart:\t\t$(date -d @${endtime} +"%T")\t\t"
     echo -e " Total run duration:\t$(( ${seconds}/3600/24 )) d $(date -ud @$seconds +'%H h %M m %S s')\t"
@@ -666,9 +676,9 @@ function connectVPN {
     fi
 
     #get connection stats if available
-    if [[ $(type -t connectionVPNInfo) == function ]]
+    if [[ $(type -t connectionVPNInfoCommand) == function ]]
     then
-        connectionVPNInfoString="$(connectionVPNInfo)"
+        connectionVPNInfoString="$(connectionVPNInfoCommand)"
         #echo "###############  function exists  ############## $connectionVPNInfoString"
     else
         connectionVPNInfoString="";
@@ -684,6 +694,18 @@ function connectVPN {
 
 echo -e "\033[2J"
 
+# check prerequisites
+if [[ $(type -t checkVPNPrerequisitesCommand) == function ]] ; then
+
+    checkVPNPrerequisitesCommand;
+
+else
+
+    echo "checkVPNPrerequisitesCommand not defined -> will skip VPN-relevant checks.";
+
+fi
+
+# initialize the EXE
 initEXECommand
 
 # at startup 
