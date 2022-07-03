@@ -2,9 +2,9 @@
 
 #source "${pluginDir}/plugin_networking_nm.sh"
 
-echo "###################################################################################################################"
-echo "Note, there is no active network management plugin selected -> no need to worry, network state will not be impacted";
-echo "###################################################################################################################"
+echo "#####################################################################################################################"
+echo "Note, there is no network management plugin selected -> no need to worry, vpnrunner will not change the network state";
+echo "#####################################################################################################################"
 #sleep 5s
 
 ############### networking commands ########################
