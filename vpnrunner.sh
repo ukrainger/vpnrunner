@@ -341,7 +341,20 @@ function stopAttack {
     echo -ne "\033[20B"
 
 }
-trap stopAttack EXIT
+
+function exitScript {
+
+    stopAttack;
+
+    echo "Exiting the script..."
+
+    sleep 3s;
+
+    echo -e "\033[2J";
+
+}
+
+trap exitScript EXIT
 
 wipIndicator="[       ]"
 function updateWIPIndicator {
@@ -610,7 +623,7 @@ function disconnectVPN {
     tput setaf 4;
     echo "Disconnected VPN."
 
-    sleep 10s;
+    #sleep 10s;
     
 }
 
@@ -692,6 +705,7 @@ function connectVPN {
 
 ############### init #######################################
 
+#clrscr
 echo -e "\033[2J"
 
 # check prerequisites
