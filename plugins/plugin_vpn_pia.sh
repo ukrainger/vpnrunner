@@ -27,10 +27,10 @@ function checkVPNPrerequisitesCommand {
 }
 
 #connect to a certain location that will be selected from the list randomly. $1 is the location passed by the main script.
-function connectVPNCommand { piactl set protocol wireguard; piactl set region $1; sleep 5s; timeout 60s piactl connect; sleep 5s; }
+function connectVPNCommand { piactl set protocol wireguard; piactl set region $1; sleep 5s; timeout 60s piactl connect; sleep 10s; }
 
 #fallback command in case the primary one fails (happens sometimes with e.g. NordVPN)
-function connectVPNFallbackCommand { piactl set region auto; sleep 2s; timeout 60s piactl connect; sleep 5s; }
+function connectVPNFallbackCommand { piactl set region auto; sleep 2s; timeout 60s piactl connect; sleep 10s; }
 
 #disconnect from VPN
 function disconnectVPNCommand { piactl disconnect; sleep 5s; }
