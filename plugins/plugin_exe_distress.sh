@@ -17,13 +17,13 @@ function statusAttackCommand {
 
 function startAttackProxyCommand {
 
-    ./$EXEDir/${EXE} -c 2048 -u 0&
+    ./$EXEDir/${EXE} -c 2048 --use-my-ip 0&
 
 }
  
 function startAttackCommand {
 
-    ./$EXEDir/${EXE} -c 2048 -u 100&
+    ./$EXEDir/${EXE} -c 2048 --use-my-ip 100&
 
 }
 
