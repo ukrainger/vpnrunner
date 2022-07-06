@@ -39,6 +39,6 @@ function disconnectVPNCommand { piactl disconnect; sleep 5s; }
 function statusVPNConnectedCheckCommand { piactl get connectionstate | grep -q -w 'Connected'; echo $(($?==0)); }
 
 #some statistics on the connection
-function connectionVPNInfoCommand { echo "region: $( piactl get region ) | vpnip: $( piactl get vpnip ) | protocol: $( piactl get protocol )"; }
+function connectionVPNInfoCommand { echo "rgn: $( piactl get region ) | ip: $(curl -s https://ifconfig.net/ip) | geo: $(curl -s https://ifconfig.net/country-iso), $(curl -s https://ifconfig.net/city) | prtcl: $( piactl get protocol )"; }
 
 ############################################################
