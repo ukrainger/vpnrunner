@@ -756,7 +756,7 @@ while true ; do
       	endtime=$(date -ud "$runtime" +%s)
       	vpnInfoUpdateTime=$(date -ud "$vpnInfoUpdateInterval" +%s)
 		
-		while [[ $(( $(date -u +%s) + $heartbeatinterval )) -le $endtime ]] ; do
+		while [[ $(date -u +%s) -le $endtime ]] ; do
 
 			if [[ "$(statusNetwork)" != "connected" ]] ;then
 
@@ -786,6 +786,12 @@ while true ; do
                     checkAttackHeartBeat;
 
                     sleep 0.5s;
+
+                    if [[ $(date -u +%s) -ge $endtime ]] ; then
+
+                        break;
+
+                    fi
 
                 done
 
@@ -817,13 +823,19 @@ while true ; do
     
         endtime=$(date -ud "$runtime" +%s)
 
-        while [[ $(( $(date -u +%s) + $heartbeatinterval )) -le $endtime ]] ; do
+        while [[ $(date -u +%s) -le $endtime ]] ; do
 
             for (( i=1; i<=$(( $heartbeatinterval * 2 )); i++ )) ; do
 
                 checkAttackHeartBeat;
 
                 sleep 0.5s;
+
+                if [[ $(date -u +%s) -ge $endtime ]] ; then
+
+                    break;
+
+                fi
 
             done
 
