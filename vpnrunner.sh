@@ -19,6 +19,8 @@
 #тривалість роботи до перепідключення із VPN-сервером
 runtime="15 minute"
 
+vpnInfoUpdateInterval="3 minute"
+
 #heartbeatinterval between checks if still connected to VPN server. put number in seconds
 #як часто перевіряти з'єднання з VPN сервером. час у секундах
 heartbeatinterval=5
@@ -218,6 +220,7 @@ do
     fi #unary vs binary arguments
 
 done
+
 
 if (! $vpnArgSpecified) && (! $proxyArgSpecified) ; then
 
@@ -424,6 +427,7 @@ function printStatus {
     statHeight=8; # must equal the number of output rows
 
     #clean
+    local i; # important to have it as local here, otherwise it leads to issues in the main loop
     for (( i=1 ; i<= $(( ${statHeight} + ${statOffset} )) ; ++i ))
     do
         echo -ne "\033[K\r\n"
@@ -460,8 +464,7 @@ function checkAttackHeartBeat {
 
     updateWIPIndicator
 
-    if [[ $(statusAttack) == "running" ]]
-    then
+    if [[ $(statusAttack) == "running" ]] ; then
 
         #tput setaf 2;
         seconds=$(( $(date +%s)-$globalStartDate ));
@@ -628,6 +631,21 @@ function disconnectVPN {
 }
 
 connectionVPNInfoString="-";
+
+function connectionVPNInfoStringUpdate {
+
+    #get connection stats if available
+    if [[ $(type -t connectionVPNInfoCommand) == function ]]
+    then
+        connectionVPNInfoString="$(connectionVPNInfoCommand)"
+        #echo "###############  function exists  ############## $connectionVPNInfoString"
+    else
+        connectionVPNInfoString="";
+        #echo "###############  function DOES NOT EXIST  ############## $connectionVPNInfoString"
+    fi
+
+}
+
 function connectVPN {
 
     tput setaf 4;
@@ -688,15 +706,7 @@ function connectVPN {
         
     fi
 
-    #get connection stats if available
-    if [[ $(type -t connectionVPNInfoCommand) == function ]]
-    then
-        connectionVPNInfoString="$(connectionVPNInfoCommand)"
-        #echo "###############  function exists  ############## $connectionVPNInfoString"
-    else
-        connectionVPNInfoString="";
-        #echo "###############  function DOES NOT EXIST  ############## $connectionVPNInfoString"
-    fi
+    connectionVPNInfoStringUpdate
     
 }
 
@@ -739,18 +749,16 @@ globalStartDate=$(date +%s);
 ############### main #######################################
 
 # main loop
-while true
-do
+while true ; do
 
 	if (! $use_proxy) || ($proxyArgSpecified && $vpnArgSpecified) ; then
 	
       	endtime=$(date -ud "$runtime" +%s)
+      	vpnInfoUpdateTime=$(date -ud "$vpnInfoUpdateInterval" +%s)
 		
-		while [[ $(date -u +%s) -le $endtime ]]
-		do
-			
-			if [[ "$(statusNetwork)" != "connected" ]]
-			then
+		while [[ $(( $(date -u +%s) + $heartbeatinterval )) -le $endtime ]] ; do
+
+			if [[ "$(statusNetwork)" != "connected" ]] ;then
 
                 tput setaf 5;
                 echo "Network seems not to be connected. Will try to reconnect..."
@@ -760,8 +768,7 @@ do
 
 			fi
 			
-			if [[ "$(statusVPN)" != "connected" ]] 
-			then
+			if [[ "$(statusVPN)" != "connected" ]] ; then
                 
                 tput setaf 4;
                 echo "VPN is not connected! Will try to reconnect and restart the attack..."
@@ -774,8 +781,7 @@ do
               	
             else # VPN connected
                     
-                for (( i=1; i<=$(( $heartbeatinterval * 2 )); i++ ))
-                do
+                for (( i=1; i<=$(( $heartbeatinterval * 2 )); i++ )) ; do
 
                     checkAttackHeartBeat;
 
@@ -786,6 +792,16 @@ do
                 #sleep $heartbeatinterval
 
             fi # VPN connected
+
+            # update vpn info
+            if [[ $(date -u +%s) -ge $vpnInfoUpdateTime ]] ; then
+
+                connectionVPNInfoStringUpdate
+
+                # get the next time point for VPN info update
+                vpnInfoUpdateTime=$(date -ud "$vpnInfoUpdateInterval" +%s)
+
+            fi # vpn info update
 
         done # attack duration
         
@@ -801,13 +817,13 @@ do
     
         endtime=$(date -ud "$runtime" +%s)
 
-        while [[ $(date -u +%s) -le $endtime ]] ; do
+        while [[ $(( $(date -u +%s) + $heartbeatinterval )) -le $endtime ]] ; do
 
-            for (( i=1; i<=$heartbeatinterval; i++ )) ; do
+            for (( i=1; i<=$(( $heartbeatinterval * 2 )); i++ )) ; do
 
                 checkAttackHeartBeat;
 
-                sleep 1s;
+                sleep 0.5s;
 
             done
 
