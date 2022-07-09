@@ -5,13 +5,15 @@
 
 Увага! Ця програма має виключно ознайомчу мету та надається "як є", без жодної гарантії. Використовуйте її на власну відповідальність.
 
-Цей скрипт bash використовується для автоматичного з'єднання із VPN (командна стрічка) та наступного виконання деякої програми. Кожних x хвилин (налаштовується), програма зупиняється, а VPN заново з'єднуєтся із випадковою країною (зі списку). Розробник надихався db1000_hotspotshield. Запуск відбувається легко:
+Цей скрипт bash використовується для автоматичного з'єднання із VPN (командна стрічка) та наступного виконання деякої програми. Кожних x хвилин (налаштовується), програма зупиняється, а VPN заново з'єднуєтся із випадковою країною (зі списку). Розробник надихався db1000_hotspotshield. Запуск відбувається легко. Ось деякі приклади:
 
 ./vpnrunner.sh --vpn <Ваш VPN>
 
-або
-
 ./vpnrunner.sh --vpn <Ваш VPN> --exe <Ваш EXE>
+
+./vpnrunner.sh --use-proxy --exe <Ваш EXE>
+
+./vpnrunner.sh --vpn <Ваш VPN> --use-proxy --exe <Ваш EXE>
 
 <Ваш VPN> вказує на розширення для VPN під назвою plugin_vpn_<Ваш VPN>.sh, яке знаходиться у папці plugins. Наприклад, plugin_vpn_pia.sh - тут знаходяться команди для запуску, зупинки, перевірки VPN з'єднання для PrivateInternetAccess VPN. Той же принцип стосується <Ваш EXE> у розширеннях plugin_exe_<Ваш EXE>.sh.
 
@@ -22,6 +24,8 @@
  - expressvpn
  - pia
  - purevpn
+
+Зауважте, місця розташування для з'єднань VPN вказані у відповідних файлах розширень та можуть бути припасованими до Ваших потреб вручну.
 
 Перевірені програми:
 
@@ -38,15 +42,17 @@
 
 Attention! This program has purely educational purpose and is provided "as is" without any warranty. Use it under your own responsibility.
 
-This bash script is intended to automatically connect to your VPN (command line) and then run a certain executable. Every x minutes (configurable), the executable stops and the VPN reconnects to a random country (from a predefined list). Strongly inspired by db1000_hotspotshield. Can be executed as easy as:
+This bash script is intended to automatically connect to your VPN (command line) and then run a certain executable. Every x minutes (configurable), the executable stops and the VPN reconnects to a random country (from a predefined list). Strongly inspired by db1000_hotspotshield. Can be executed as easy as in the following examples:
 
-./vpnrunner.sh --vpn <your VPN>
+./vpnrunner.sh --vpn <VPN>
 
-or
+./vpnrunner.sh --vpn <VPN> --exe <EXE>
 
-./vpnrunner.sh --vpn <your VPN> --exe <your EXE>
+./vpnrunner.sh --use-proxy --exe <EXE>
 
-<your VPN> points at the VPN-plugin plugin_vpn_<your VPN>.sh in the folder plugins. E.g., plugin_vpn_pia.sh contains commands to start, stop, check VPN connection for PrivateInternetAccess VPN. Same principles apply to <your EXE> in  plugins/plugin_exe_<your EXE>.sh.
+./vpnrunner.sh --vpn <VPN> --use-proxy --exe <EXE>
+
+<VPN> points at the VPN-plugin named plugin_vpn_<VPN>.sh in the folder plugins. E.g., plugin_vpn_pia.sh contains commands to start, stop, check VPN connection for PrivateInternetAccess VPN. Same principles apply to <EXE> in  plugins/plugin_exe_<EXE>.sh.
 
 Note, you must install and activate the corresponding VPN client from your VPN provider for vpnrunner to operate properly. So far, the following VPN plugins are available (tested):
 
@@ -55,6 +61,8 @@ Note, you must install and activate the corresponding VPN client from your VPN p
  - expressvpn
  - pia
  - purevpn
+
+Note, connection locations for VPN are listed in the plugin files and can be tailored to your needs manually.
 
 Tested executables:
 
