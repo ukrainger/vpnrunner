@@ -7,6 +7,8 @@
 
 Цей скрипт bash використовується для автоматичного з'єднання із VPN (командна стрічка) та наступного виконання деякої програми. Кожних x хвилин (налаштовується), програма зупиняється, а VPN заново з'єднуєтся із випадковою країною (зі списку). Розробник надихався db1000_hotspotshield. Запуск відбувається легко. Ось деякі приклади:
 
+./vpnrunner.sh --help
+
 ./vpnrunner.sh --vpn <Ваш VPN>
 
 ./vpnrunner.sh --vpn <Ваш VPN> --exe <Ваш EXE>
@@ -43,6 +45,8 @@
 Attention! This program has purely educational purpose and is provided "as is" without any warranty. Use it under your own responsibility.
 
 This bash script is intended to automatically connect to your VPN (command line) and then run a certain executable. Every x minutes (configurable), the executable stops and the VPN reconnects to a random country (from a predefined list). Strongly inspired by db1000_hotspotshield. Can be executed as easy as in the following examples:
+
+./vpnrunner.sh --help
 
 ./vpnrunner.sh --vpn < VPN >
 
