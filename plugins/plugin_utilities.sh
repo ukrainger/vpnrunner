@@ -44,3 +44,43 @@ function osArch {
 
 echo "OS type: $(osType)"
 echo "OS Architecture: $(osArch)"
+
+
+function connectionVPNInfoIPCommand {
+
+    local res="$(timeout 5s curl -s https://ifconfig.net/ip)";
+
+    if [[ "$res" == "" ]] ; then
+
+        res="?";
+
+    fi
+
+    echo $res;
+}
+
+function connectionVPNInfoCountryCommand {
+
+    local res="$(timeout 5s curl -s https://ifconfig.net/country-iso)";
+
+    if [[ "$res" == "" ]] ; then
+
+        res="?";
+
+    fi
+
+    echo $res;
+}
+
+function connectionVPNInfoCityCommand {
+
+    local res="$(timeout 5s curl -s https://ifconfig.net/city)";
+
+    if [[ "$res" == "" ]] ; then
+
+        res="?";
+
+    fi
+
+    echo $res;
+}

@@ -30,7 +30,7 @@ function checkVPNPrerequisitesCommand {
 function connectVPNCommand { piactl set protocol wireguard; piactl set region $1; sleep 5s; timeout 60s piactl connect; sleep 10s; }
 
 #fallback command in case the primary one fails (happens sometimes with e.g. NordVPN)
-function connectVPNFallbackCommand { piactl set region auto; sleep 2s; timeout 60s piactl connect; sleep 10s; }
+function connectVPNFallbackCommand { piactl set region $1; sleep 2s; timeout 60s piactl connect; sleep 10s; }
 
 #disconnect from VPN
 function disconnectVPNCommand { piactl disconnect; sleep 5s; }
@@ -39,6 +39,6 @@ function disconnectVPNCommand { piactl disconnect; sleep 5s; }
 function statusVPNConnectedCheckCommand { piactl get connectionstate | grep -q -w 'Connected'; echo $(($?==0)); }
 
 #some statistics on the connection
-function connectionVPNInfoCommand { echo "rgn: $( piactl get region ) | ip: $(curl -s https://ifconfig.net/ip) | geo: $(curl -s https://ifconfig.net/country-iso), $(curl -s https://ifconfig.net/city) | prtcl: $( piactl get protocol )"; }
+function connectionVPNInfoCommand { echo "rgn: $( piactl get region ) | ip: $(connectionVPNInfoIPCommand) | geo: $(connectionVPNInfoCountryCommand), $(connectionVPNInfoCityCommand) | prtcl: $( piactl get protocol )"; }
 
 ############################################################

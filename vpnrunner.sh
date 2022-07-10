@@ -597,6 +597,8 @@ function statusVPN {
     
 }
 
+connectionVPNInfoString="";
+
 function disconnectVPN {
 
     tput setaf 4;
@@ -626,22 +628,29 @@ function disconnectVPN {
     tput setaf 4;
     echo "Disconnected VPN."
 
+    connectionVPNInfoString="";
+
     #sleep 10s;
     
 }
 
-connectionVPNInfoString="-";
-
 function connectionVPNInfoStringUpdate {
 
     #get connection stats if available
-    if [[ $(type -t connectionVPNInfoCommand) == function ]]
-    then
-        connectionVPNInfoString="$(connectionVPNInfoCommand)"
+    if [[ $(type -t connectionVPNInfoCommand) == function ]] ; then
+
+        if [[ ($connectionVPNInfoString == "") || ($connectionVPNInfoString =~ \?+) ]] ; then
+
+            connectionVPNInfoString="$(connectionVPNInfoCommand)"
+
+        fi;
         #echo "###############  function exists  ############## $connectionVPNInfoString"
+
     else
+
         connectionVPNInfoString="";
         #echo "###############  function DOES NOT EXIST  ############## $connectionVPNInfoString"
+
     fi
 
 }
@@ -672,7 +681,7 @@ function connectVPN {
                 tput setaf 1;
                 echo "Some trouble connecting to VPN... Will try again using the fall-back option..."
             
-                connectVPNFallbackCommand
+                connectVPNFallbackCommand ${location[$die1]}
             
                 if [[ "$(statusVPN)" != "connected" ]]
                 then
