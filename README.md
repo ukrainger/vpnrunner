@@ -17,17 +17,16 @@
 
 ./vpnrunner.sh --vpn <Ваш VPN> --use-proxy --exe <Ваш EXE>
 
-<Ваш VPN> вказує на розширення для VPN під назвою plugin_vpn_<Ваш VPN>.sh, яке знаходиться у папці plugins. Наприклад, plugin_vpn_pia.sh - тут знаходяться команди для запуску, зупинки, перевірки VPN з'єднання для PrivateInternetAccess VPN. Той же принцип стосується <Ваш EXE> у розширеннях plugin_exe_<Ваш EXE>.sh.
-
-Зауважте, Вам необхідно встановити відповідний клієнт від Вашого VPN-оператора, аби vpnrunner міг правильно працювати. Наразі, наступні розширення для VPN є доступними (перевірено):
+<Ваш VPN> вказує на розширення для VPN під назвою plugin_vpn_<Ваш VPN>.sh, яке знаходиться у папці plugins. Наприклад, plugin_vpn_pia.sh - тут знаходяться команди для запуску, зупинки, перевірки VPN з'єднання для PrivateInternetAccess VPN. Той же принцип стосується <Ваш EXE> у розширеннях plugin_exe_<Ваш EXE>.sh. Зауважте, Вам зазвичай необхідно встановити відповідний клієнт від Вашого VPN-оператора, аби vpnrunner міг правильно працювати. Наразі, наступні розширення для VPN є доступними (перевірено):
 
  - nordvpn
  - hotspotshield
  - expressvpn
  - pia
  - purevpn
+ - NetworkManager - екпериментальне розширення, яке дозволяє використовувати з'єднання налаштовані у Вашому менеджері мережі NetworkManager. Такими з'єднаннями можуть бути конфігурації для OpenVPN або WireGuard на основі імпортованих файлів від Вашого VPN-оператора. За замовчуванням розширення буде переключатися між усіма такими з'єднаннями, змінюючи таким чином Ваші доступні VPN сервери. Зауважте, підключення у NetworkManager повинні бути правильно налаштованими ще до запуску vpnrunner.
 
-Зауважте, місця розташування для з'єднань VPN вказані у відповідних файлах розширень та можуть бути припасованими до Ваших потреб вручну.
+Зауважте, місця розташування для з'єднань VPN вказані у відповідних файлах розширень та можуть бути пристосованими до Ваших потреб вручну.
 
 Перевірені програми:
 
@@ -56,15 +55,14 @@ This bash script is intended to automatically connect to your VPN (command line)
 
 ./vpnrunner.sh --vpn < VPN > --use-proxy --exe < EXE >
 
-< VPN > points at the VPN-plugin named plugin_vpn_< VPN >.sh in the folder plugins. E.g., plugin_vpn_pia.sh contains commands to start, stop, check VPN connection for PrivateInternetAccess VPN. Same principles apply to < EXE > in  plugins/plugin_exe_< EXE >.sh.
-
-Note, you must install and activate the corresponding VPN client from your VPN provider for vpnrunner to operate properly. So far, the following VPN plugins are available (tested):
+< VPN > points at the VPN-plugin named plugin_vpn_< VPN >.sh in the folder plugins. E.g., plugin_vpn_pia.sh contains commands to start, stop, check VPN connection for PrivateInternetAccess VPN. Same principles apply to < EXE > in  plugins/plugin_exe_< EXE >.sh. Note, you must usually install and activate the corresponding VPN client from your VPN provider for vpnrunner to operate properly. So far, the following VPN plugins are available (tested):
 
  - nordvpn
  - hotspotshield
  - expressvpn
  - pia
  - purevpn
+ - NetworkManager - experimental extension allowing you to use connections in NetworkManager. Such connections could be configured for OpenVPN or WireGuard using configuration files from your VPN provider. By default, the extension will be switching between all of the available connections, thus switching your VPN servers. Note, connections in NetworkManager must be correctly configured before launching vpnrunner.
 
 Note, connection locations for VPN are listed in the plugin files and can be tailored to your needs manually.
 
