@@ -242,6 +242,8 @@ if (! $vpnArgSpecified) && (! $proxyArgSpecified) ; then
 
 fi
 
+source ${pluginDir}/plugin_utilities.sh
+
 if $vpnArgSpecified ; then
 
     source $vpnPluginFileName
@@ -251,8 +253,6 @@ fi
 source $exePluginFileName
 
 source $networkingPluginFileName
-
-source ${pluginDir}/plugin_utilities.sh
 
 ############################################################
 
@@ -463,6 +463,8 @@ function printStatus {
 function checkAttackHeartBeat {
 
     updateWIPIndicator
+
+    seconds=0;
 
     if [[ $(statusAttack) == "running" ]] ; then
 
