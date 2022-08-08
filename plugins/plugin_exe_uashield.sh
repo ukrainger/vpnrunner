@@ -47,15 +47,16 @@ function stopAttackCommand {
 
         pkill --signal SIGTERM --exact "$EXE" --oldest;
 
+        sleep 2s;
+
     done
 
+    rm -r /tmp/scoped_dir*
 
     #pgrep -f "vpnrunner_process_${EXE}" | xargs pkill -TERM -P
     #pgrep -f "vpnrunner_process_${EXE}" | xargs kill -9; sleep 2s;  \
 
     #pgrep -x "$EXE" | xargs kill -9; sleep 2s;  \
-
-    sleep 2s;
 
 }
 

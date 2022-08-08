@@ -52,6 +52,9 @@ function stopAttackCommand {
 
     pkill --signal SIGTERM --full "$EXE"; sleep 2s;
 
+
+    rm -r /tmp/_MEI*
+
 }
 
 #some statistics
