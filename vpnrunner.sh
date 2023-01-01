@@ -630,14 +630,12 @@ function disconnectVPN {
     tput setaf 4;
     echo "Disconnecting VPN..."
         
-    if [[ "$(statusVPN)" == "disconnected" ]]
-    then
+    if [[ "$(statusVPN)" == "disconnected" ]] ; then
         tput setaf 4;
         echo "VPN already disconnected"
     fi
     
-    while [[ "$(statusVPN)" != "disconnected" ]]
-    do
+    while [[ "$(statusVPN)" != "disconnected" ]] ; do
     
         #tput setaf 4;
         #echo "Trying to disconnect VPN..."
@@ -646,6 +644,16 @@ function disconnectVPN {
         # command to disconnect VPN
         disconnectVPNCommand
         
+        local ctr=0;
+
+        while [[ "$(statusVPNConnectedCheckCommand)" != "0" && ctr -le 10 ]] ; do
+
+            sleep 1s;
+            echo -ne "Still disconnecting...\r";
+            ctr=$(( $ctr + 1 ));
+
+        done
+
         #tput setaf 4;
         #echo "VPN status: $(statusVPN)"
         
@@ -700,7 +708,17 @@ function connectVPN {
             
             # command to connect to VPN
             connectVPNCommand ${location[$die1]}
-            
+
+            local ctr=0;
+
+            while [[ "$(statusVPNConnectedCheckCommand)" != "1" && ctr -le 10 ]] ; do
+
+                sleep 1s;
+                echo -ne "Still connecting...\r";
+                ctr=$(( $ctr + 1 ));
+
+            done
+
             if [[ "$(statusVPN)" != "connected" ]]
             then
             
@@ -709,6 +727,16 @@ function connectVPN {
             
                 connectVPNFallbackCommand ${location[$die1]}
             
+                ctr=0;
+
+                while [[ "$(statusVPNConnectedCheckCommand)" != "1" && ctr -le 10 ]] ; do
+
+                    sleep 1s;
+                    echo -ne "Still connecting...\r";
+                    ctr=$(( $ctr + 1 ));
+
+                done
+
                 if [[ "$(statusVPN)" != "connected" ]]
                 then
 

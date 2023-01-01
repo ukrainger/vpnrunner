@@ -34,17 +34,6 @@ function connectVPNCommand {
     sleep 1s;
     timeout 60s piactl connect;
 
-    local ctr=0;
-
-    while [[ "$(statusVPNConnectedCheckCommand)" != "1" && ctr -le 10 ]]
-    do
-
-        sleep 1s;
-        echo -ne "Still connecting...\r";
-        ctr=$(( $ctr + 1 ));
-
-    done
-
 }
 
 #fallback command in case the primary one fails (happens sometimes with e.g. NordVPN)
@@ -54,34 +43,12 @@ function connectVPNFallbackCommand {
     sleep 1s;
     timeout 60s piactl connect;
 
-    local ctr=0;
-
-    while [[ "$(statusVPNConnectedCheckCommand)" != "1" && ctr -le 10 ]]
-    do
-
-        sleep 1s;
-        echo -ne "Still connecting...\r";
-        ctr=$(( $ctr + 1 ));
-
-    done
-
 }
 
 #disconnect from VPN
 function disconnectVPNCommand {
 
     piactl disconnect;
-
-    local ctr=0;
-
-    while [[ "$(statusVPNConnectedCheckCommand)" != "0" && ctr -le 10 ]]
-    do
-
-        sleep 1s;
-        echo -ne "Still disconnecting...\r";
-        ctr=$(( $ctr + 1 ));
-
-    done
 
 }
 
