@@ -2,7 +2,8 @@
 
 #server locations for VPN
 #сервери для VPN
-location=( "de-frankfurt" )
+location=( "armenia" "turkey" "moldova" "egypt" "serbia" "czech-republic" "croatia" "israel" "kazakhstan" "united-arab-emirates" "hungary" "mongolia" "china" "saudi-arabia" "india" )
+
 
 
 # VPN client
