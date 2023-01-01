@@ -84,3 +84,19 @@ function connectionVPNInfoCityCommand {
 
     echo $res;
 }
+
+function connectionInternetReachability {
+
+    local res;
+
+    res=$(ping -q -w 5 -c 1 8.8.8.8 > /dev/null && echo "online" || echo "offline")
+
+    if [[ "$res" == "offline" ]] ; then
+
+        res=$(ping -q -w 5 -c 1 1.1.1.1 > /dev/null && echo "online" || echo "offline");
+
+    fi
+
+    echo $res;
+
+}

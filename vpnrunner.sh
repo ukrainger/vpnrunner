@@ -21,6 +21,8 @@ runtime="15 minute"
 
 vpnInfoUpdateInterval="3 minute"
 
+vpnServiceRestartInterval="0 minute"
+
 #heartbeatinterval between checks if still connected to VPN server. put number in seconds
 #як часто перевіряти з'єднання з VPN сервером. час у секундах
 heartbeatinterval=5
@@ -31,6 +33,9 @@ use_proxy=false
 
 #force binaries reinstall
 forceExeReinstall=false
+
+#suppress status printout
+suppressPrintStatus=false;
 
 ################ arguments and plugins  ####################
 
@@ -54,14 +59,16 @@ function printHelp {
     echo "Example: $0 --vpn nordvpn --exe distress"
     echo "Example: $0 --vpn expressvpn --exe db1000n --network-manager nm"
     echo ""
-    echo "  --help                - [u] show this help info"
-    echo "  --vpn                 - [b] VPN plugin to use (some are available, one must be selected)"
-    echo "  --exe                 - [b] executable plugin to use (default available)"
-    echo "  --use-proxy           - [u] asks the exe to use proxy, if supported (default $use_proxy)"
-    echo "  --network-manager     - [b] network manager plugin to use (default available)"
-    echo "  --heartbeat-interval  - [b] interval to check the VPN status, in seconds (default is $heartbeatinterval)"
-    echo "  --restart-interval    - [b] interval to restart the run, in minutes (default is $runtime)"
-    echo "  --force-exe-reinstall - [u] executable will be removed and reinstalled (default is $forceExeReinstall)"
+    echo "  --help                          - [u] show this help info"
+    echo "  --vpn                           - [b] VPN plugin to use (some are available, one must be selected)"
+    echo "  --exe                           - [b] executable plugin to use (default available)"
+    echo "  --use-proxy                     - [u] asks the exe to use proxy, if supported (default $use_proxy)"
+    echo "  --network-manager               - [b] network manager plugin to use (default available)"
+    echo "  --heartbeat-interval            - [b] interval to check the VPN status, in seconds (default is $heartbeatinterval)"
+    echo "  --restart-interval              - [b] interval to restart the run, in minutes (default is $runtime)"
+    echo "  --vpn-service-restart-interval  - [b] interval to restart the vpn service, in minutes (default is $vpnServiceRestartInterval)"
+    echo "  --force-exe-reinstall           - [u] executable will be removed and reinstalled (default is $forceExeReinstall)"
+    echo "  --suppress-status               - [u] the status output will be suppressed (default is $suppressPrintStatus)"
     echo ""
     echo "[u] - does not require any parameter value, [b] - requires parameter value."
     echo ""
@@ -115,6 +122,10 @@ do
     elif [[ "${args[$i]}" == "--force-exe-reinstall" ]]; then
 
         forceExeReinstall=true;
+
+    elif [[ "${args[$i]}" == "--suppress-status" ]]; then
+
+        suppressPrintStatus=true;
 
     else
 
@@ -214,6 +225,13 @@ do
 
             #check whether the networking plugin exists
             runtime="${argValue} minute"
+
+        elif [[ "$argName" == "--vpn-service-restart-interval" ]]; then
+
+            echo "parsed argument $argName: ${argValue}"
+
+            #check whether the networking plugin exists
+            vpnServiceRestartInterval="${argValue} minute"
 
         fi #parameters
 
@@ -423,6 +441,12 @@ function updateWIPIndicator {
 
 function printStatus {
 
+    if ($suppressPrintStatus); then
+
+        return;
+
+    fi;
+
     statOffset=10;
     statHeight=8; # must equal the number of output rows
 
@@ -439,7 +463,7 @@ function printStatus {
 
     tput setaf 2;
     for (( j=1 ; j<=${nCols} ; ++j )); do echo -n "-"; done
-    echo -e " Run status:\t\t${wipIndicator}\t\t"
+    echo -e " Run status:\t\t${wipIndicator} | ${connectionInternetReachabilityString}"
     if $vpnArgSpecified ; then
         if ! $use_proxy ; then
             echo -e " VPN:\t\t\t${vpnPluginName} ($connectionVPNInfoString)"
@@ -721,6 +745,38 @@ function connectVPN {
     
 }
 
+function restartVPNService {
+
+    # if available
+    if [[ $(type -t restartVPNServiceCommand) == function ]] ; then
+
+        if [[ "$(restartVPNServiceCommand)" == "1" ]]
+        then
+
+            tput setaf 4;
+            #echo "Restarting VPN service...";
+
+        else
+
+            tput setaf 1;
+            echo "Not possible to restart VPN service.";
+
+        fi
+
+
+    else
+
+        tput setaf 1;
+        echo "Function restartVPNServiceCommand DOES NOT EXIST ->  no restart for the VPN service";
+
+    fi
+
+    tput setaf 4;
+
+}
+
+connectionInternetReachabilityString="";
+
 ############################################################
 
 
@@ -752,8 +808,13 @@ if $vpnArgSpecified; then
 
 fi
 
+# next time to restart the vpn service
+vpnServiceRestartTime=$(date -ud "$vpnServiceRestartInterval" +%s)
+
 # stats
 globalStartDate=$(date +%s);
+
+
 
 ############################################################
 
@@ -775,10 +836,11 @@ while true ; do
                 echo "Network seems not to be connected. Will try to reconnect..."
 
                 stopAttack
+
                 reconnectNetwork
 
 			fi
-			
+
 			if [[ "$(statusVPN)" != "connected" ]] ; then
                 
                 tput setaf 4;
@@ -792,6 +854,23 @@ while true ; do
               	
             else # VPN connected
                     
+                # check whether we are online
+                connectionInternetReachabilityString="$(connectionInternetReachability)";
+                if [[ "$connectionInternetReachabilityString" != "online" ]] ; then
+
+                    echo "VPN is connected, but internet is not reachable -> will reconnect VPN...";
+
+                    stopAttack;
+
+                    disconnectVPN;
+
+                    connectVPN;
+
+                    continue;
+
+                fi
+
+                # check whether the EXE is running
                 for (( i=1; i<=$(( $heartbeatinterval * 2 )); i++ )) ; do
 
                     checkAttackHeartBeat;
@@ -820,6 +899,25 @@ while true ; do
 
             fi # vpn info update
 
+            # restart vpn service
+            if [[ "$vpnServiceRestartInterval" != "0 minute" && $(date -u +%s) -ge $vpnServiceRestartTime ]] ; then
+
+                tput setaf 4;
+                echo "Restarting VPN service..."
+
+                # get the next time point for VPN service restart
+                vpnServiceRestartTime=$(date -ud "$vpnServiceRestartInterval" +%s)
+
+                stopAttack;
+
+                disconnectVPN;
+
+                restartVPNService;
+
+                connectVPN;
+
+            fi # vpn info update
+
         done # attack duration
         
         tput setaf 7; tput setab 4;
@@ -828,6 +926,7 @@ while true ; do
         echo "----------------------------------------------";
         
         stopAttack;
+
         disconnectVPN;
     
     else # use_proxy only
