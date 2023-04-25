@@ -5,7 +5,7 @@
 #виконавча програма
 EXEDir=uashield
 EXE=shield
-shieldVersion=1.0.10
+shieldVersion=1.0.11
 
 
 ############### functions ##################################
@@ -72,7 +72,7 @@ function initEXECommand {
 
     if $forceExeReinstall ; then
 
-        echo "Forcing exe reinstall -> will delete the folder $EXEDir"
+        tput setaf 3; echo "Forcing exe reinstall -> will delete the folder $EXEDir";tput setaf 6
         rm -f -r "$EXEDir"
 
     fi
@@ -80,12 +80,12 @@ function initEXECommand {
     #download and install the EXE if not available
     if [ -d "$EXEDir" ] ; then
 
-        echo "$EXEDir already exists -> nothing to do."
+        tput setaf 3; echo "$EXEDir already exists -> nothing to do.";tput setaf 6
         echo ""
 
     else
 
-        echo "Exe dir does not exist -> will create one by checking out from GIT..."
+        tput setaf 3; echo "Exe dir does not exist -> will create one by checking out from GIT...";tput setaf 6
         echo ""
 
         mkdir $EXEDir

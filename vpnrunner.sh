@@ -23,6 +23,8 @@ vpnInfoUpdateInterval="3 minute"
 
 vpnServiceRestartInterval="0 minute"
 
+connectionInternetReachabilityCheckInterval="5 minute"
+
 #heartbeatinterval between checks if still connected to VPN server. put number in seconds
 #як часто перевіряти з'єднання з VPN сервером. час у секундах
 heartbeatinterval=5
@@ -67,6 +69,7 @@ function printHelp {
     echo "  --heartbeat-interval            - [b] interval to check the VPN status, in seconds (default is $heartbeatinterval)"
     echo "  --restart-interval              - [b] interval to restart the run, in minutes (default is $runtime)"
     echo "  --vpn-service-restart-interval  - [b] interval to restart the vpn service, in minutes (default is $vpnServiceRestartInterval)"
+    echo "  --internet-check-interval       - [b] interval to check internet reachability, in minutes (default is $connectionInternetReachabilityCheckInterval)"
     echo "  --force-exe-reinstall           - [u] executable will be removed and reinstalled (default is $forceExeReinstall)"
     echo "  --suppress-status               - [u] the status output will be suppressed (default is $suppressPrintStatus)"
     echo ""
@@ -74,7 +77,7 @@ function printHelp {
     echo ""
     echo "Note, executables will be downloaded automatically if not available."
     echo ""
-    tput setaf 4;
+    tput setaf 3;
 
 }
 
@@ -233,6 +236,18 @@ do
             #check whether the networking plugin exists
             vpnServiceRestartInterval="${argValue} minute"
 
+        elif [[ "$argName" == "--internet-check-interval" ]]; then
+
+            echo "parsed argument $argName: ${argValue}"
+
+            # how ofter should internet reachability checks performed
+            connectionInternetReachabilityCheckInterval="${argValue} minute"
+
+        else
+
+            echo "Unknown argument $argName -> exit";
+            exit 1
+
         fi #parameters
 
     fi #unary vs binary arguments
@@ -247,7 +262,7 @@ if (! $vpnArgSpecified) && (! $proxyArgSpecified) ; then
     tput setaf 2;
     echo "Please specify --use-proxy or the --vpn argument for one of the following available VPN plugins:";
     echo ""
-    tput setaf 4;
+    tput setaf 3;
     for curVPNPluginName in "${vpnPluginNames[@]}"
     do
         expr "$curVPNPluginName" : "./${pluginDir}/plugin_vpn_\(.*\).sh"
@@ -279,8 +294,7 @@ source $networkingPluginFileName
 
 function statusAttack {
 
-    if [[ "$(statusAttackCommand)" == "1" ]]
-    then
+    if [[ "$(statusAttackCommand)" == "1" ]] ; then
         echo "running";
     else
         echo "down";
@@ -340,11 +354,10 @@ function startAttack {
 
 function stopAttack {
 
-    if [[ "$(statusAttack)" == "running" ]]
-    then
+    if [[ "$(statusAttack)" == "running" ]] ; then
 
         tput setaf 2;
-        echo "Stopping $EXE";
+        #echo "Stopping $EXE";
         tput setaf 6;
 
         stopAttackCommand
@@ -352,7 +365,7 @@ function stopAttack {
     else
 
         tput setaf 3;
-        echo "$EXE is not running"
+        #echo "$EXE is not running"
         tput setaf 6;
 
     fi
@@ -575,8 +588,7 @@ function disconnectNetwork {
     tput setaf 5;
     echo "Disconnecting network..."
 
-    while [[ "$(statusNetworking)" == "enabled" ]]
-    do
+    while [[ "$(statusNetworking)" == "enabled" ]] ; do
     
         tput setaf 5;
         echo "Networking still enabled. Trying to disconnect.";
@@ -627,17 +639,17 @@ connectionVPNInfoString="";
 
 function disconnectVPN {
 
-    tput setaf 4;
-    echo "Disconnecting VPN..."
+    tput setaf 3;
+    echo -ne "Disconnecting VPN...\r"
         
     if [[ "$(statusVPN)" == "disconnected" ]] ; then
-        tput setaf 4;
-        echo "VPN already disconnected"
+        tput setaf 3;
+        echo -ne "VPN already disconnected\r"
     fi
     
     while [[ "$(statusVPN)" != "disconnected" ]] ; do
     
-        #tput setaf 4;
+        #tput setaf 3;
         #echo "Trying to disconnect VPN..."
         
         
@@ -654,12 +666,12 @@ function disconnectVPN {
 
         done
 
-        #tput setaf 4;
+        #tput setaf 3;
         #echo "VPN status: $(statusVPN)"
         
     done
     
-    tput setaf 4;
+    tput setaf 3;
     echo "Disconnected VPN."
 
     connectionVPNInfoString="";
@@ -691,19 +703,17 @@ function connectionVPNInfoStringUpdate {
 
 function connectVPN {
 
-    tput setaf 4;
-    echo "Connecting VPN..."
+    tput setaf 3;
+    echo -ne "Connecting VPN"
 
-    if [[ "$(statusNetwork)" == "connected" ]]
-    then
+    if [[ "$(statusNetwork)" == "connected" ]] ; then
     
-        while [[ "$(statusNetwork)" == "connected" && "$(statusVPN)" != "connected" ]]
-        do
+        while [[ "$(statusNetwork)" == "connected" && "$(statusVPN)" != "connected" ]] ; do
 
             die1=$((RANDOM % ${#location[*]}))
             
-            tput setaf 4;
-            echo "Trying to connect VPN to ${location[$die1]}"
+            tput setaf 3;
+            echo " to ${location[$die1]}..."
             
             
             # command to connect to VPN
@@ -719,8 +729,7 @@ function connectVPN {
 
             done
 
-            if [[ "$(statusVPN)" != "connected" ]]
-            then
+            if [[ "$(statusVPN)" != "connected" ]] ; then
             
                 tput setaf 1;
                 echo "Some trouble connecting to VPN... Will try again using the fall-back option..."
@@ -737,29 +746,30 @@ function connectVPN {
 
                 done
 
-                if [[ "$(statusVPN)" != "connected" ]]
-                then
+                if [[ "$(statusVPN)" != "connected" ]] ; then
 
                     tput setaf 1;
-                    echo "The fall-back option did not work! Will try again from the beginning..."
+                    echo "The fall-back option did not work! Will reconnect network and try again from the beginning...";
+                    disconnectVPN;
+                    reconnectNetwork; # that is likely the best we can do if not possible to connect to VPN. Any other actions we could think of?
 
                 else
 
-                    tput setaf 4;
+                    tput setaf 3;
                     echo "Successfully connected to VPN using the fall-back option!"
 
                 fi
 
             else
             
-                tput setaf 4;
+                tput setaf 3;
                 echo "Successfully connected to VPN!"
             
             fi
         
         done
         
-        #tput setaf 4;
+        #tput setaf 3;
         #echo "Connected VPN."
 
     else # network not connected
@@ -781,7 +791,7 @@ function restartVPNService {
         if [[ "$(restartVPNServiceCommand)" == "1" ]]
         then
 
-            tput setaf 4;
+            tput setaf 3;
             #echo "Restarting VPN service...";
 
         else
@@ -799,11 +809,9 @@ function restartVPNService {
 
     fi
 
-    tput setaf 4;
+    tput setaf 3;
 
 }
-
-connectionInternetReachabilityString="";
 
 ############################################################
 
@@ -836,6 +844,9 @@ if $vpnArgSpecified; then
 
 fi
 
+# current status
+connectionInternetReachabilityString="inet unknown";
+
 # next time to restart the vpn service
 vpnServiceRestartTime=$(date -ud "$vpnServiceRestartInterval" +%s)
 
@@ -855,6 +866,7 @@ while true ; do
 	
       	endtime=$(date -ud "$runtime" +%s)
       	vpnInfoUpdateTime=$(date -ud "$vpnInfoUpdateInterval" +%s)
+      	connectionInternetReachabilityCheckTime=$(date -u +%s)
 		
 		while [[ $(date -u +%s) -le $endtime ]] ; do
 
@@ -863,40 +875,53 @@ while true ; do
                 tput setaf 5;
                 echo "Network seems not to be connected. Will try to reconnect..."
 
-                stopAttack
-
-                reconnectNetwork
+                stopAttack;
+                reconnectNetwork;
 
 			fi
 
 			if [[ "$(statusVPN)" != "connected" ]] ; then
                 
-                tput setaf 4;
-                echo "VPN is not connected! Will try to reconnect and restart the attack..."
+                tput setaf 3;
+                echo "VPN is not connected! Will try to reconnect and restart..."
 
                 stopAttack;
-                                
                 connectVPN;
-                
-                startAttack;
+                #startAttack; will be checked by checkAttackHeartBeat
+
+                continue;
               	
             else # VPN connected
-                    
+
                 # check whether we are online
-                connectionInternetReachabilityString="$(connectionInternetReachability)";
-                if [[ "$connectionInternetReachabilityString" != "online" ]] ; then
+                if [[ $(date -u +%s) -ge $connectionInternetReachabilityCheckTime ]] ; then
 
-                    echo "VPN is connected, but internet is not reachable -> will reconnect VPN...";
+                    connectionInternetReachabilityString="inet check";
+                    checkAttackHeartBeat; # updates the status
+                    connectionInternetReachabilityString="$(connectionInternetReachability)";
+                    if [[ "$connectionInternetReachabilityString" != "online" ]] ; then
 
-                    stopAttack;
+                        #echo "VPN is connected, but internet is not reachable -> will reconnect VPN...";
+                        #connectionInternetReachabilityString="inet not reachable";
+                        checkAttackHeartBeat; # updates the status
 
-                    disconnectVPN;
+                        stopAttack;
+                        disconnectVPN;
+                        reconnectNetwork;
+                        connectVPN;
 
-                    connectVPN;
+                        connectionInternetReachabilityCheckTime=$(date -u +%s); # immediately check again whether we are online in case we do a reconnect
 
-                    continue;
+                        continue;
 
-                fi
+                    else # next check interval
+
+                        # get the next time point for online check
+                        connectionInternetReachabilityCheckTime=$(date -ud "$connectionInternetReachabilityCheckInterval" +%s);
+
+                    fi # internet reachable
+
+                fi # online
 
                 # check whether the EXE is running
                 for (( i=1; i<=$(( $heartbeatinterval * 2 )); i++ )) ; do
@@ -930,18 +955,15 @@ while true ; do
             # restart vpn service
             if [[ "$vpnServiceRestartInterval" != "0 minute" && $(date -u +%s) -ge $vpnServiceRestartTime ]] ; then
 
-                tput setaf 4;
+                tput setaf 3;
                 echo "Restarting VPN service..."
 
                 # get the next time point for VPN service restart
                 vpnServiceRestartTime=$(date -ud "$vpnServiceRestartInterval" +%s)
 
                 stopAttack;
-
                 disconnectVPN;
-
                 restartVPNService;
-
                 connectVPN;
 
             fi # vpn info update
@@ -959,9 +981,36 @@ while true ; do
     
     else # use_proxy only
     
-        endtime=$(date -ud "$runtime" +%s)
+        endtime=$(date -ud "$runtime" +%s);
+        connectionInternetReachabilityCheckTime=$(date -ud "$connectionInternetReachabilityCheckInterval" +%s);
 
         while [[ $(date -u +%s) -le $endtime ]] ; do
+
+            # internet reachability
+            if [[ $(date -u +%s) -ge $connectionInternetReachabilityCheckTime ]] ; then
+
+                connectionInternetReachabilityString="inet check";
+                checkAttackHeartBeat;
+                connectionInternetReachabilityString="$(connectionInternetReachability)";
+                if [[ "$connectionInternetReachabilityString" != "online" ]] ;then
+
+                    #tput setaf 5;
+                    #echo "Internet is not reachable -> will try to reconnect ...";
+                    checkAttackHeartBeat;
+
+                    stopAttack;
+                    reconnectNetwork;
+
+                    connectionInternetReachabilityCheckTime=$(date -u +%s); # immediately check again whether we are online in case we do a reconnect
+
+                fi # internet reachable
+
+            else # next check interval
+
+                # get the next time point for online check
+                connectionInternetReachabilityCheckTime=$(date -ud "$connectionInternetReachabilityCheckInterval" +%s);
+
+            fi # internet reachability
 
             for (( i=1; i<=$(( $heartbeatinterval * 2 )); i++ )) ; do
 

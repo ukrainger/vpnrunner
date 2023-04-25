@@ -48,7 +48,7 @@ function initEXECommand {
 
     if $forceExeReinstall ; then
 
-        echo "Forcing exe reinstall -> will delete the folder $EXEDir"
+        tput setaf 3; echo "Forcing exe reinstall -> will delete the folder $EXEDir";tput setaf 6
         rm -r "$EXEDir"
 
     fi
@@ -57,7 +57,7 @@ function initEXECommand {
     then
         echo ""
     else
-        echo "Exe dir does not exist -> will create one"
+        tput setaf 3; echo "Exe dir does not exist -> will create one";tput setaf 6
         mkdir $EXEDir
     fi
 

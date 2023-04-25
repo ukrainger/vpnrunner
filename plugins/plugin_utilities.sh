@@ -95,6 +95,12 @@ function connectionInternetReachability {
 
         res=$(ping -q -w 5 -c 1 1.1.1.1 > /dev/null && echo "online" || echo "offline");
 
+        if [[ "$res" == "offline" ]] ; then
+
+            res=$(ping -q -w 5 -c 1 208.67.222.222 > /dev/null && echo "online" || echo "offline");
+
+        fi
+
     fi
 
     echo $res;
