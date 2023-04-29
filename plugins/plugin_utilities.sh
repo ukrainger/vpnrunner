@@ -106,3 +106,6 @@ function connectionInternetReachability {
     echo $res;
 
 }
+
+
+CLRLINE="\033[2K";

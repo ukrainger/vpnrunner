@@ -6,30 +6,32 @@
 EXEDir=void
 EXE=void
 
+voidRunning=0;
 
 ############### functions ##################################
 
 function statusAttackCommand {
 
-    echo $((1==1));
+    #echo $((1==1));
+    echo $(($voidRunning==1));
 
 }
 
 function startAttackProxyCommand {
 
-    :;
+    voidRunning=1;
 
 }
  
 function startAttackCommand {
 
-    :;
+    voidRunning=1;
 
 }
 
 function stopAttackCommand {
 
-    :;
+    voidRunning=0;
 
 }
 

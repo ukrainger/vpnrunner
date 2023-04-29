@@ -39,6 +39,9 @@ forceExeReinstall=false
 #suppress status printout
 suppressPrintStatus=false;
 
+#connection name
+networkConnectionName="";
+
 ################ arguments and plugins  ####################
 
 #plugin directory
@@ -66,6 +69,7 @@ function printHelp {
     echo "  --exe                           - [b] executable plugin to use (default available)"
     echo "  --use-proxy                     - [u] asks the exe to use proxy, if supported (default $use_proxy)"
     echo "  --network-manager               - [b] network manager plugin to use (default available)"
+    echo "  --network-connection-name       - [b] network connection name to be used (if not specified then autoconnection is assumed)"
     echo "  --heartbeat-interval            - [b] interval to check the VPN status, in seconds (default is $heartbeatinterval)"
     echo "  --restart-interval              - [b] interval to restart the run, in minutes (default is $runtime)"
     echo "  --vpn-service-restart-interval  - [b] interval to restart the vpn service, in minutes (default is $vpnServiceRestartInterval)"
@@ -83,14 +87,13 @@ function printHelp {
 
 #parsing arguments
 argidx=1;
-for arg in $@
-do
+for arg in "$@" ; do
     #echo "arg: $arg"
-    args[$argidx]=$arg
+    args[$argidx]="$arg"
     argidx=$(( $argidx+1 ));
 done
 
-args=$@
+args="$@"
 
 #check for mandatory arguments
 vpnArgSpecified=false;
@@ -215,6 +218,12 @@ do
                 exit 1;
 
             fi #networking plugin check
+
+        elif [[ "$argName" == "--network-connection-name" ]]; then
+
+            echo "parsed argument $argName: ${argValue}"
+
+            networkConnectionName=${argValue}
 
         elif [[ "$argName" == "--heartbeat-interval" ]]; then
 
@@ -357,7 +366,7 @@ function stopAttack {
     if [[ "$(statusAttack)" == "running" ]] ; then
 
         tput setaf 2;
-        #echo "Stopping $EXE";
+        echo "$(date +%T): Stopping $EXE";
         tput setaf 6;
 
         stopAttackCommand
@@ -380,7 +389,7 @@ function exitScript {
 
     stopAttack;
 
-    echo "Exiting the script..."
+    echo -e "\nExiting the script..."
 
     sleep 3s;
 
@@ -516,11 +525,17 @@ function checkAttackHeartBeat {
     else # attack not running
 
         tput setaf 2;
-        echo ""
-        echo "$(date +%T) $EXE gets started." "Next restart at $(date -d @${endtime} +"%T")"
+        echo "";
+        echo -n "$(date +%T): $EXE gets started...";
         tput setaf 6;
 
         startAttack
+
+        if [[ $(statusAttack) == "running" ]] ; then
+            tput setaf 2;
+            echo -e "\r${CLRLINE}$(date +%T): $EXE started."
+            tput setaf 6;
+        fi
 
     fi # attack status
 
@@ -566,53 +581,70 @@ function connectNetwork {
     #echo "statusNetworkConnectedCheckCommand: ${statusNetworkConnectedCheckCommand}"
 
     tput setaf 5;
-    echo "Connecting network..."
+    echo -ne "${CLRLINE}Connecting network...\r"
     
-    while [[ "$(statusNetworking)" != "enabled" ]]
-    do
+    while [[ "$(statusNetworking)" != "enabled" ]] ; do
     
         tput setaf 5;
-        echo "Networking not enabled! Trying to connect."
+        echo -e "${CLRLINE}Networking not enabled! Trying to connect..."
  
-        connectNetworkCommand
-        
+        if [[ "$networkConnectionName" == "" ]] ; then
+            connectNetworkCommand;
+        else
+            connectNetworkCommand "$networkConnectionName"
+        fi;
+
+        echo -ne "\r";
+
     done
 
     tput setaf 5;
-    echo "Connected network."
+    if [[ "$(statusNetwork)" == "connected" ]] ; then
+
+        echo -e "${CLRLINE}Connected network."
+
+    else
+
+        tput setaf 1;
+        echo -e "${CLRLINE}Networking enabled, but network not connected!"
+        tput setaf 5;
+
+    fi;
+
     
 }
 
 function disconnectNetwork {
 
     tput setaf 5;
-    echo "Disconnecting network..."
+    echo -ne "${CLRLINE}Disconnecting network...\r"
 
     while [[ "$(statusNetworking)" == "enabled" ]] ; do
     
         tput setaf 5;
-        echo "Networking still enabled. Trying to disconnect.";
+        echo -ne "${CLRLINE}Network still enabled. Trying to disconnect";
 
         disconnectNetworkCommand
         
+        echo -ne "\r";
+
     done
 
     tput setaf 5;
-    echo "Disconnected network."
+    echo -e "${CLRLINE}Disconnected network."
 
 }
 
 function reconnectNetwork {
 
     tput setaf 5;
-    echo "Reconnecting network..."
+    #echo "Reconnecting network..."
 
-    disconnectNetwork
-    
-    connectNetwork
+    disconnectNetwork;
+    connectNetwork;
 
     tput setaf 5;
-    echo "Reconnected network."
+    #echo "Reconnected network."
 
 }
     
@@ -620,8 +652,7 @@ function statusVPN {
 
     local res="undefined";
 
-    if [[ "$(statusVPNConnectedCheckCommand)" == "1" ]]
-    then
+    if [[ "$(statusVPNConnectedCheckCommand)" == "1" ]] ; then
     
         res="connected"
     
@@ -640,39 +671,58 @@ connectionVPNInfoString="";
 function disconnectVPN {
 
     tput setaf 3;
-    echo -ne "Disconnecting VPN...\r"
+    echo -ne "${CLRLINE}Disconnecting VPN...\r"
         
     if [[ "$(statusVPN)" == "disconnected" ]] ; then
+
         tput setaf 3;
-        echo -ne "VPN already disconnected\r"
-    fi
-    
-    while [[ "$(statusVPN)" != "disconnected" ]] ; do
-    
-        #tput setaf 3;
-        #echo "Trying to disconnect VPN..."
-        
-        
-        # command to disconnect VPN
-        disconnectVPNCommand
-        
-        local ctr=0;
+        echo -ne "${CLRLINE}VPN already disconnected\r";
 
-        while [[ "$(statusVPNConnectedCheckCommand)" != "0" && ctr -le 10 ]] ; do
+    else
 
-            sleep 1s;
-            echo -ne "Still disconnecting...\r";
-            ctr=$(( $ctr + 1 ));
+        while [[ "$(statusVPN)" != "disconnected" ]] ; do
 
-        done
+            #tput setaf 3;
+            #echo "Trying to disconnect VPN..."
+
+
+            # command to disconnect VPN
+            disconnectVPNCommand
+
+            local ctr=0;
+
+            if [[ "$(statusVPN)" != "disconnected" ]] ; then
+
+                echo "";
+                echo -ne ".\r";
+
+                while [[ ctr -le 10 ]] ; do
+
+                    if [[ "$(statusVPN)" == "disconnected" ]] ; then
+                        echo "";
+                        break;
+                    else
+                        echo -n ".";
+                    fi;
+
+                    sleep 1s;
+
+                    #echo -ne "${CLRLINE}Still disconnecting...\r";
+                    ctr=$(( $ctr + 1 ));
+
+                done
+
+            fi;
 
         #tput setaf 3;
         #echo "VPN status: $(statusVPN)"
-        
-    done
+
+        done
+
+    fi
     
     tput setaf 3;
-    echo "Disconnected VPN."
+    echo -e "${CLRLINE}Disconnected VPN."
 
     connectionVPNInfoString="";
 
@@ -704,16 +754,20 @@ function connectionVPNInfoStringUpdate {
 function connectVPN {
 
     tput setaf 3;
-    echo -ne "Connecting VPN"
+    echo -e "${CLRLINE}Connecting VPN...";
 
     if [[ "$(statusNetwork)" == "connected" ]] ; then
     
+        local ctrVPNConnectAttempts=0;
+
         while [[ "$(statusNetwork)" == "connected" && "$(statusVPN)" != "connected" ]] ; do
+
+            ctrVPNConnectAttempts=$(( $ctrVPNConnectAttempts + 1 ));
 
             die1=$((RANDOM % ${#location[*]}))
             
             tput setaf 3;
-            echo " to ${location[$die1]}..."
+            echo "Connecting VPN to ${location[$die1]}...";
             
             
             # command to connect to VPN
@@ -721,10 +775,18 @@ function connectVPN {
 
             local ctr=0;
 
-            while [[ "$(statusVPNConnectedCheckCommand)" != "1" && ctr -le 10 ]] ; do
+            while [[ ctr -le 10 ]] ; do
 
                 sleep 1s;
-                echo -ne "Still connecting...\r";
+
+                if [[ "$(statusVPN)" == "connected" ]] ; then
+                    echo "";
+                    break;
+                else
+                    echo -n ".";
+                fi;
+
+                #echo -ne "${CLRLINE}Still connecting...\r";
                 ctr=$(( $ctr + 1 ));
 
             done
@@ -732,16 +794,24 @@ function connectVPN {
             if [[ "$(statusVPN)" != "connected" ]] ; then
             
                 tput setaf 1;
-                echo "Some trouble connecting to VPN... Will try again using the fall-back option..."
+                echo -e "${CLRLINE}Some trouble connecting to VPN... Will try again using the fall-back option..."
             
                 connectVPNFallbackCommand ${location[$die1]}
             
                 ctr=0;
 
-                while [[ "$(statusVPNConnectedCheckCommand)" != "1" && ctr -le 10 ]] ; do
+                while [[ ctr -le 10 ]] ; do
 
                     sleep 1s;
-                    echo -ne "Still connecting...\r";
+
+                    if [[ "$(statusVPN)" == "connected" ]] ; then
+                        echo "";
+                        break;
+                    else
+                        echo -n ".";
+                    fi;
+
+                    #echo -ne "${CLRLINE}Still connecting...\r";
                     ctr=$(( $ctr + 1 ));
 
                 done
@@ -749,9 +819,16 @@ function connectVPN {
                 if [[ "$(statusVPN)" != "connected" ]] ; then
 
                     tput setaf 1;
-                    echo "The fall-back option did not work! Will reconnect network and try again from the beginning...";
+                    echo -e "${CLRLINE}The fall-back option did not work! Will try again from the beginning...";
                     disconnectVPN;
-                    reconnectNetwork; # that is likely the best we can do if not possible to connect to VPN. Any other actions we could think of?
+
+                    if [[ ctrVPNConnectAttempts -ge 5 ]] ; then
+
+                        ctrVPNConnectAttempts=0;
+                        echo "Will try with reconnecting network...";
+                        reconnectNetwork; # that is likely the best we can do if not possible to connect to VPN. Any other actions we could think of?
+
+                    fi;
 
                 else
 
@@ -852,6 +929,7 @@ vpnServiceRestartTime=$(date -ud "$vpnServiceRestartInterval" +%s)
 
 # stats
 globalStartDate=$(date +%s);
+seconds=0;
 
 
 
@@ -897,13 +975,15 @@ while true ; do
                 if [[ $(date -u +%s) -ge $connectionInternetReachabilityCheckTime ]] ; then
 
                     connectionInternetReachabilityString="inet check";
-                    checkAttackHeartBeat; # updates the status
+                    if [[ $(statusAttack) == "running" ]] ; then printStatus; fi ;
+                    #checkAttackHeartBeat; # updates the status
                     connectionInternetReachabilityString="$(connectionInternetReachability)";
                     if [[ "$connectionInternetReachabilityString" != "online" ]] ; then
 
                         #echo "VPN is connected, but internet is not reachable -> will reconnect VPN...";
                         #connectionInternetReachabilityString="inet not reachable";
-                        checkAttackHeartBeat; # updates the status
+                        #checkAttackHeartBeat; # updates the status
+                        if [[ $(statusAttack) == "running" ]] ; then printStatus; fi ;
 
                         stopAttack;
                         disconnectVPN;
@@ -971,13 +1051,16 @@ while true ; do
         done # attack duration
         
         tput setaf 7; tput setab 4;
-        echo "$(date +%T) disconnecting from VPN server loop"; 
+        echo "$(date +%T): disconnecting from VPN server loop";
         tput setaf 6; tput setab 0;
-        echo "----------------------------------------------";
-        
+        #echo "----------------------------------------------";
         stopAttack;
-
         disconnectVPN;
+        tput setaf 6;
+        for (( j=1 ; j<=${nCols} ; ++j )); do echo -n "-"; done ; echo "";
+        for (( j=1 ; j<=${nCols} ; ++j )); do echo -n "|"; done ; echo "";
+        for (( j=1 ; j<=${nCols} ; ++j )); do echo -n "-"; done ; echo "";
+        echo "";
     
     else # use_proxy only
     
@@ -1031,13 +1114,17 @@ while true ; do
         tput setaf 7; tput setab 4;
         echo "$(date +%T) restarting the loop";
         tput setaf 6; tput setab 0;
-        echo "----------------------------------------------";
-
-        stopAttack
+        #echo "----------------------------------------------";
+        stopAttack;
+        tput setaf 6;
+        for (( j=1 ; j<=${nCols} ; ++j )); do echo -n "-"; done ; echo "";
+        for (( j=1 ; j<=${nCols} ; ++j )); do echo -n "|"; done ; echo "";
+        for (( j=1 ; j<=${nCols} ; ++j )); do echo -n "-"; done ; echo "";
+        echo "";
 
     fi # use_proxy
 
-    printStatus;
+    #printStatus;
 
 done #global loop
 
