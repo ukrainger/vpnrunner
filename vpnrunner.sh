@@ -186,19 +186,28 @@ do
 
             #check whether the exe plugin exists
             exePluginFileName="${pluginDir}/plugin_exe_$argValue.sh";
-            if [ -e $exePluginFileName ]
-            then
+            if [ -e $exePluginFileName ] ; then
 
                 echo "Exe plugin for $argValue found.";
 
             else
 
-                tput setaf 1;
-                echo "Exe plugin for $argValue NOT found (file $exePluginFileName does not exist) -> will exit.";
-                exit 1;
+                echo "Exe plugin for $argValue NOT found (file $exePluginFileName does not exist) -> will try with a custom script...";
+
+                exePluginFileName="$argValue";
+                if [ -e $exePluginFileName ] ; then
+
+                    echo "Script $argValue found.";
+
+                else
+
+                    tput setaf 1;
+                    echo "Script $argValue NOT found (file $exePluginFileName does not exist) -> will exit.";
+                    exit 1;
+
+                fi #exe plugin check
 
             fi #exe plugin check
-
 
         elif [[ "$argName" == "--network-manager" ]]; then
 
@@ -393,7 +402,7 @@ function exitScript {
 
     sleep 3s;
 
-    echo -e "\033[2J";
+    #echo -e "\033[2J";
 
 }
 
@@ -794,7 +803,7 @@ function connectVPN {
             if [[ "$(statusVPN)" != "connected" ]] ; then
             
                 tput setaf 1;
-                echo -e "${CLRLINE}Some trouble connecting to VPN... Will try again using the fall-back option..."
+                echo -e "\r${CLRLINE}Some trouble connecting to VPN... Will try again using the fall-back option..."
             
                 connectVPNFallbackCommand ${location[$die1]}
             
@@ -819,7 +828,7 @@ function connectVPN {
                 if [[ "$(statusVPN)" != "connected" ]] ; then
 
                     tput setaf 1;
-                    echo -e "${CLRLINE}The fall-back option did not work! Will try again from the beginning...";
+                    echo -e "\r${CLRLINE}The fall-back option did not work! Will try again from the beginning...";
                     disconnectVPN;
 
                     if [[ ctrVPNConnectAttempts -ge 5 ]] ; then
@@ -865,8 +874,7 @@ function restartVPNService {
     # if available
     if [[ $(type -t restartVPNServiceCommand) == function ]] ; then
 
-        if [[ "$(restartVPNServiceCommand)" == "1" ]]
-        then
+        if [[ "$(restartVPNServiceCommand)" == "1" ]] ; then
 
             tput setaf 3;
             #echo "Restarting VPN service...";
