@@ -831,11 +831,21 @@ function connectVPN {
                     echo -e "\r${CLRLINE}The fall-back option did not work! Will try again from the beginning...";
                     disconnectVPN;
 
+                    # try reconnecting network
                     if [[ ctrVPNConnectAttempts -ge 5 ]] ; then
 
-                        ctrVPNConnectAttempts=0;
+                        #ctrVPNConnectAttempts=0;
                         echo "Will try with reconnecting network...";
                         reconnectNetwork; # that is likely the best we can do if not possible to connect to VPN. Any other actions we could think of?
+
+                    fi;
+
+                    # try restarting the VPN
+                    if [[ ctrVPNConnectAttempts -ge 10 ]] ; then
+
+                        ctrVPNConnectAttempts=0;
+                        echo "Will try with restarting VPN...";
+                        restartVPNService; # also restart VPN since it might sometimes hang
 
                     fi;
 
