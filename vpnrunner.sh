@@ -561,6 +561,7 @@ function statusNetworking {
 
 }
 
+# probably, not needed
 function statusConnectivity {
 
     if [[ "$(statusConnectivityEnabledCheckCommand)" == "1" ]]

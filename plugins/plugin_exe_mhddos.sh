@@ -50,7 +50,9 @@ function stopAttackCommand {
 
     #pgrep -x "$EXE" | xargs kill -9; sleep 2s;  \
 
-    pkill --signal SIGTERM --full "$EXE"; sleep 2s;
+    pkill --signal SIGTERM --full "$EXE"; # try stopping gracefully
+    sleep 2s;
+    pkill --signal SIGKILL --full "$EXE"; # kill in case of zombies
 
 
     rm -r /tmp/_MEI*
