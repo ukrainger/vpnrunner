@@ -34,7 +34,7 @@ function startAttackCommand {
 
     #python3 runner.py --itarmy --vpn 0 "vpnrunner_process_${EXE}"&
 
-    ./${EXE} --vpn&
+    ./${EXE} --use-my-ip&
 
     cd ..
 
