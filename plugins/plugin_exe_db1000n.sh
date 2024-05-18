@@ -46,6 +46,9 @@ function exeInfoCommand { echo "version: $(expr "$(./$EXEDir/${EXE} --version 2>
 
 function initEXECommand {
 
+
+    initEXECommandSucceeded=true
+
     if $forceExeReinstall ; then
 
         tput setaf 3; echo "Forcing exe reinstall -> will delete the folder $EXEDir";tput setaf 6
@@ -68,21 +71,27 @@ function initEXECommand {
     else
 
         tput setaf 3; echo "Downloading the application";tput setaf 6
-        until [ -f $EXEDir/${EXE} ]
-        do
 
-            tput setaf 6;
+        tput setaf 6;
 
-            cd $EXEDir;
+        cd $EXEDir;
 
-            (source <(curl https://raw.githubusercontent.com/Arriven/db1000n/main/install.sh);) #IMPORTANT: use parentheses here to avoid some strange effects
+        (source <(curl https://raw.githubusercontent.com/Arriven/db1000n/main/install.sh);) #IMPORTANT: use parentheses here to avoid some strange effects
 
-            cd ..;
+        cd ..;
 
-            #rm ${EXE}_*
-            sleep 2s;
+        #rm ${EXE}_*
+        #sleep 2s;
 
-        done
+        if [ -s $EXEDir/${EXE} ] ; then
+
+            initEXECommandSucceeded=true
+
+        else
+
+            initEXECommandSucceeded=false
+
+        fi
     fi
 
 }

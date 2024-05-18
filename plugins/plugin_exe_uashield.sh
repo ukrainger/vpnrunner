@@ -70,6 +70,9 @@ function exeInfoCommand { echo "version: $(expr "$(./$EXEDir/${EXE} --version 2>
 
 function initEXECommand {
 
+
+    initEXECommandSucceeded=true
+
     if $forceExeReinstall ; then
 
         tput setaf 3; echo "Forcing exe reinstall -> will delete the folder $EXEDir";tput setaf 6
@@ -111,23 +114,35 @@ function initEXECommand {
 
         echo "Determined EXE name is $EXE"
 
-        wget -O ${EXE}.tar.gz https://github.com/opengs/uashield/releases/download/v${shieldVersion}/${fileDLD}.tar.gz
+        wget -O "${EXE}_arch" https://github.com/opengs/uashield/releases/download/v${shieldVersion}/${fileDLD}.tar.gz
 
-        tar -xvf "${EXE}.tar.gz"
+        if [[ ! -f "${EXE}_arch" ||  ! -s "${EXE}_arch" ]]; then
 
-        cd ${fileDLD}
+            tput setaf 1; echo "Failed to download ${EXE}!"; tput setaf 6;
+            initEXECommandSucceeded=false
 
-        cp -r * ../
+        else
 
-        cd ..
+            tput setaf 3; echo "Successfully downloaded ${EXE}!"; tput setaf 6;
 
-        chmod +x ${EXE}
+            tar -xvf "${EXE}_arch"
+
+            cd ${fileDLD}
+
+            cp -r * ../
+
+            cd ..
+
+            chmod +x ${EXE}
+
+        fi
 
         cd ..;
 
         sleep 2s;
 
     fi
+
 
 }
 

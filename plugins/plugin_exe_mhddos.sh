@@ -27,7 +27,7 @@ function startAttackProxyCommand {
 
 
 }
- 
+
 function startAttackCommand {
 
     cd $EXEDir
@@ -69,7 +69,9 @@ function exeInfoCommand { echo ""; }
 
 function initEXECommand {
 
-    if $forceExeReinstall ; then
+    initEXECommandSucceeded=true
+
+    if [ $forceExeReinstall ] ; then
 
         tput setaf 3; echo "Forcing exe reinstall -> will delete the folder $EXEDir";tput setaf 6
         rm -f -r "$EXEDir"
@@ -122,13 +124,23 @@ function initEXECommand {
 
         wget -O ${EXE} https://github.com/porthole-ascend-cinnamon/mhddos_proxy_releases/releases/latest/download/${DEXE}
 
-        chmod +x ${EXE}
+        if [ ! -s ${EXE} ]; then
+
+            tput setaf 1; echo "Failed to download ${EXE}!"; tput setaf 6;
+            initEXECommandSucceeded=false
+
+        else
+
+            tput setaf 3; echo "Successfully downloaded ${EXE}!"; tput setaf 6;
+            chmod +x ${EXE}
+
+        fi
 
         cd ..;
 
-        sleep 2s;
 
     fi
+
 
 }
 

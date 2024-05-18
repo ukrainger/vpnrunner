@@ -51,7 +51,7 @@ function exeInfoCommand {
 
 function initEXECommand {
 
-    :;
+    initEXECommandSucceeded=true;
 
 }
 
